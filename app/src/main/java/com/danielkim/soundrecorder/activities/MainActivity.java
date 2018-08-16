@@ -12,6 +12,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.danielkim.soundrecorder.R;
@@ -20,7 +22,7 @@ import com.danielkim.soundrecorder.fragments.LicensesFragment;
 import com.danielkim.soundrecorder.fragments.RecordFragment;
 
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity implements ViewPager.OnPageChangeListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -34,6 +36,7 @@ public class MainActivity extends ActionBarActivity{
 
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new MyAdapter(getSupportFragmentManager()));
+        pager.setOnPageChangeListener(this);
         tabs = (PagerSlidingTabStrip) findViewById(R.id.tabs);
         tabs.setViewPager(pager);
 
@@ -66,10 +69,26 @@ public class MainActivity extends ActionBarActivity{
                 return super.onOptionsItemSelected(item);
         }
     }
-
+    
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+    
+    @Override
+    public void onPageSelected(int position) {
+		Toast.makeText(this, position + "", Toast.LENGTH_SHORT).show();
+        if (position == 2) {
+            getSupportActionBar().hide();
+        } else {
+            getSupportActionBar().show();
+        }
+    }
+    
+    @Override
+    public void onPageScrollStateChanged(int state) {}
+    
     public class MyAdapter extends FragmentPagerAdapter {
         private String[] titles = { getString(R.string.tab_title_record),
-                getString(R.string.tab_title_saved_recordings) };
+                getString(R.string.tab_title_saved_recordings), getString(R.string.tab_title_edit) };
 
         public MyAdapter(FragmentManager fm) {
             super(fm);
@@ -78,6 +97,7 @@ public class MainActivity extends ActionBarActivity{
         @Override
         public Fragment getItem(int position) {
             switch(position){
+                case 2:
                 case 0:{
                     return RecordFragment.newInstance(position);
                 }
