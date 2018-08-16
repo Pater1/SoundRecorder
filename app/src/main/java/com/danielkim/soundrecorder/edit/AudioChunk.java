@@ -1,7 +1,44 @@
 package com.danielkim.soundrecorder.edit;
 
-public class AudioChunk implements AudioProvider {
+import com.danielkim.soundrecorder.edit.events.Event;
+import com.danielkim.soundrecorder.edit.events.EventHandler;
+import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 
-	private float[] pcm;
-	private long startPos;
+public abstract class AudioChunk implements AudioProvider, EventHandler {
+	protected long startIndex;
+
+	public long getStartIndex() {
+		return startIndex;
+	}
+
+	public void setStartIndex(long index) {
+		if (index >= 0) {
+			startIndex = index;
+		}
+	}
+
+
+
+	protected long sampleRate;
+	@Override
+	public long getSampleRate() {
+		return sampleRate;
+	}
+	@Override
+	public void setSampleRate(long setTo) {
+		sampleRate = setTo;
+	}
+
+	@Override
+	public boolean handleEvent(Event toHandle) {
+		boolean ret = false;
+
+		if(!ret){
+			ret = passdownHandleEvent(toHandle);
+		}
+
+		throw new NotImplementedException();
+	}
+
+	protected abstract boolean passdownHandleEvent(Event toHandle);
 }
