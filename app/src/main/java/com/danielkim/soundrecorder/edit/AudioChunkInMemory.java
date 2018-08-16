@@ -3,8 +3,8 @@ package com.danielkim.soundrecorder.edit;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 
-public class AudioChunkInMemeory extends AudioChunk {
-    public AudioChunkInMemeory(float[] pcm) {
+public class AudioChunkInMemory extends AudioChunk {
+    public AudioChunkInMemory(float[] pcm) {
         this.pcm = pcm;
     }
 
