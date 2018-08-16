@@ -20,12 +20,33 @@ public class AudioChunkInMemeory extends AudioChunk {
 
     @Override
     public float getSample(long sampleIndex) {
-        throw new NotImplementedException();
+        if(sampleIndex < 0 || sampleIndex >= pcm.length) {
+            return 0;
+        }else{
+            return pcm[(int)sampleIndex];
+        }
     }
 
     @Override
     public long getSamples(long startSampleIndex, float[] returnedSamples) {
-        throw new NotImplementedException();
+        int length = returnedSamples.length;
+        if(startSampleIndex < 0) {
+            if(startSampleIndex + returnedSamples.length < 0){
+                return 0;
+            }else{
+                length += startSampleIndex;
+                startSampleIndex = 0;
+            }
+        }else if(startSampleIndex >= pcm.length){
+            return 0;
+        }
+
+        int start = (int)startSampleIndex;
+        length =(int)(length > (pcm.length - startSampleIndex)? pcm.length - startSampleIndex: length);
+        for(int i = 0; i < length; i++){
+            returnedSamples[i] = pcm[i + start];
+        }
+        return length;
     }
 
     @Override
