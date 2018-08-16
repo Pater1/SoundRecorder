@@ -10,6 +10,14 @@ import java.util.List;
 public class Channel implements AudioProvider, EventHandler {
 	private List<AudioChunk> data = new ArrayList<>();
 	private ChannelHeader header = new ChannelHeader();
+	
+	public void add(AudioChunk chunk) {
+		data.add(chunk);
+	}
+	
+	public void remove(AudioChunk chunk) {
+		data.remove(chunk);
+	}
 
 	@Override
 	public float getSample(long sampleIndex) {
