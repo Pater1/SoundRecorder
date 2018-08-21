@@ -54,6 +54,18 @@ public class Channel implements AudioProvider, EventHandler {
 			return 0;
 		}
 	}
+	
+	public AudioChunk getChunk(int index) {
+		if (index < 0 || index >= data.size()) {
+			throw new IllegalArgumentException("index out of bounds: " + index);
+		}
+		
+		return data.get(index);
+	}
+	
+	public int getDataSize() {
+		return data.size();
+	}
 
 	private long sampleRate;
 	@Override
