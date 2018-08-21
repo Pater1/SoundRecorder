@@ -19,7 +19,7 @@ public class AudioChunkInMemoryTest extends TestCase {
 	}
 	
 	public void testGetSamples() {
-		float[] rawSamples = new float[rand.nextInt() % 4096]; //mod just to ensure test doesn't take to long to run
+		float[] rawSamples = new float[Math.abs(rand.nextInt()) % 4096]; //mod just to ensure test doesn't take to long to run
 		AudioChunk test = buildChunkInMemory(rawSamples);
 
 		int index = 0;

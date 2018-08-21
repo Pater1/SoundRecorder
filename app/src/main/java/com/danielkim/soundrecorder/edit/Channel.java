@@ -32,13 +32,27 @@ public class Channel implements AudioProvider, EventHandler {
 
 	@Override
 	public long getSamples(long startSampleIndex, float[] returnedSamples) {
+		boolean startWithinRange = false;
 		for(AudioChunk c: data){
 			long l = c.getSamples(startSampleIndex - c.getStartIndex(), returnedSamples);
 			if(l > 0){
 				return l;
 			}
+
+			if(startSampleIndex < c.getEndIndex()){
+				startWithinRange = true;
+			}
 		}
-		return 0;
+
+		if(startWithinRange) {
+			//buffer is within renderable section of channel, but falls entirely within a gap between chunks
+			for(int i = 0; i < returnedSamples.length; i++){
+				returnedSamples[i] = 0.0f;
+			}
+			return returnedSamples.length;
+		}else{
+			return 0;
+		}
 	}
 
 	private long sampleRate;
