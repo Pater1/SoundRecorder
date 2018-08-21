@@ -7,12 +7,10 @@ import java.util.Random;
 public class AudioChunkInMemoryTest extends TestCase {
 	private static final Random rand = new Random();
 	private AudioChunk buildChunkInMemory(float[] memory) {
-		float[] rawSamples = new float[rand.nextInt()];
-		for (int i = 0; i < rawSamples.length; i++) {
-			rawSamples[i] = rand.nextFloat();
+		for (int i = 0; i < memory.length; i++) {
+			memory[i] = (rand.nextFloat() * 2) -1;
 		}
-
-		return new AudioChunkInMemory(rawSamples);
+		return new AudioChunkInMemory(memory);
 	}
 	
 	public void testGetSample() {
@@ -20,7 +18,7 @@ public class AudioChunkInMemoryTest extends TestCase {
 	}
 	
 	public void testGetSamples() {
-
+		//float[] rawSamples = new float[rand.nextInt()];
 
 	}
 	
