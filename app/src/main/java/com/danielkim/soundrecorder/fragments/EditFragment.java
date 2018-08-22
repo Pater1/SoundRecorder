@@ -33,7 +33,6 @@ public class EditFragment extends Fragment {
 	 *
 	 * @return A new instance of fragment EditFragment.
 	 */
-	// TODO: Rename and change types and number of parameters
 	public static EditFragment newInstance() {
 		EditFragment fragment = new EditFragment();
 		Bundle args = new Bundle();
@@ -51,13 +50,6 @@ public class EditFragment extends Fragment {
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		return inflater.inflate(R.layout.fragment_edit, container, false);
-	}
-	
-	// TODO: Rename method, update argument and hook method into UI event
-	public void onButtonPressed(Uri uri) {
-		if (mListener != null) {
-			mListener.onFragmentInteraction(uri);
-		}
 	}
 	
 	@Override
