@@ -23,7 +23,7 @@ public class AudioChunkInMemoryTest extends TestCase {
 	}
 	
 	public void testGetSampleOutOfBounds() {
-		final float TOLERANCE = (float) 0.000001;
+		final float TOLERANCE = 0.000001f;
 		float[] memory = new float[rand.nextInt(100)];
 		AudioChunk chunk = buildChunkInMemory(memory);
 		
