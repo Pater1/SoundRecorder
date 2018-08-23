@@ -24,7 +24,7 @@ public class AudioChunkCanvas extends View {
 	private Paint mPaint;
 	private int startHighlight, endHighlight;
 	
-	Context context;
+
 	
 	public AudioChunkCanvas(Context context, AudioChunk chunk) {
 		super(context);
