@@ -49,7 +49,7 @@ public class AudioChunkCanvas extends View {
 		cursorPaint.setAntiAlias(true);
 		cursorPaint.setColor(getResources().getColor(R.color.cursor));
 		cursorPaint.setStyle(Paint.Style.FILL);
-		cursorPaint.setAlpha(150);
+		cursorPaint.setAlpha(100);
 		cursorPaint.setStrokeWidth(4f);
 		
 		this.chunk = chunk;
