@@ -6,14 +6,20 @@
              tools:context=".fragments.EditFragment">
 
     <TableRow
+        android:id="@+id/channelTableRow"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="0.8">
 
+        <!--<com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas-->
+        <!--android:id="@+id/audioChunkCanvas"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"/>-->
     </TableRow>
 
     <TableRow
+        android:id="@+id/joysticksTableRow"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="0.2"/>
 </TableLayout>
