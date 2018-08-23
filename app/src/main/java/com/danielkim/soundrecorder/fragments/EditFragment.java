@@ -8,8 +8,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableRow;
 
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.edit.AudioChunk;
+import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
+import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
+
+import java.util.Random;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -49,7 +55,20 @@ public class EditFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.fragment_edit, container, false);
+		View v = inflater.inflate(R.layout.fragment_edit, container, false);
+		TableRow canvasTableRow = (TableRow) v.findViewById(R.id.channelTableRow);
+		
+		// test
+		Random gen = new Random();
+		float[] pcm = new float[100];
+		for (int i = 0; i < pcm.length; i++) {
+			pcm[i] = gen.nextFloat() * 1000;
+		}
+		AudioChunk chunk = new AudioChunkInMemory(pcm);
+		AudioChunkCanvas canvas = new AudioChunkCanvas(getActivity(), chunk);
+		canvasTableRow.addView(canvas);
+		
+		return v;
 	}
 	
 	@Override
