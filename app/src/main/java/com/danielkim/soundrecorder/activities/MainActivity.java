@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.fragments.EditFragment;
 import com.danielkim.soundrecorder.fragments.FileViewerFragment;
 import com.danielkim.soundrecorder.fragments.LicensesFragment;
 import com.danielkim.soundrecorder.fragments.RecordFragment;
@@ -97,12 +98,14 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
         @Override
         public Fragment getItem(int position) {
             switch(position){
-                case 2:
                 case 0:{
                     return RecordFragment.newInstance(position);
                 }
                 case 1:{
                     return FileViewerFragment.newInstance(position);
+                }
+                case 2:{
+                    return EditFragment.newInstance();
                 }
             }
             return null;
