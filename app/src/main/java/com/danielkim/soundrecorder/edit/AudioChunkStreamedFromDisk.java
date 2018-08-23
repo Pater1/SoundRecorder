@@ -37,12 +37,7 @@ public class AudioChunkStreamedFromDisk extends AudioChunk  {
     private long length;
     @Override
     public long getLength() {
-        return extractor.getSampleTime();
-    }
-
-    @Override
-    protected boolean passdownHandleEvent(Event toHandle) {
-        return false;
+        return length;
     }
 
     @Override

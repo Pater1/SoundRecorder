@@ -1,5 +1,6 @@
 package com.danielkim.soundrecorder.edit;
 
+import com.danielkim.soundrecorder.edit.events.EffectTarget;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
@@ -15,8 +16,16 @@ public class Deck implements AudioProvider, EventHandler {
     }
 
     @Override
+    public int getTargetedFlag(){
+        return EffectTarget.DOCK;
+    }
+    @Override
     public boolean handleEvent(Event toHandle) {
-        throw new NotImplementedException();
+        if(!toHandle.applyEvent(this)){
+            return data.get(toHandle.getEffectChannel()).handleEvent(toHandle);
+        } else {
+            return true;
+        }
     }
 
     @Override
