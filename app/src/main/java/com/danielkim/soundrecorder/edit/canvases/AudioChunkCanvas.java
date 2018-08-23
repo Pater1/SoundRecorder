@@ -50,7 +50,7 @@ public class AudioChunkCanvas extends View {
 		cursorPaint = new Paint();
 		cursorPaint.setAntiAlias(true);
 		cursorPaint.setColor(getResources().getColor(R.color.cursor));
-		cursorPaint.setStyle(Paint.Style.STROKE);
+		cursorPaint.setStyle(Paint.Style.FILL);
 		cursorPaint.setAlpha(150);
 		cursorPaint.setStrokeWidth(4f);
 		
@@ -60,7 +60,6 @@ public class AudioChunkCanvas extends View {
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
-		Toast.makeText(context, "Width: " + getWidth() + " Height: " + getHeight(), Toast.LENGTH_SHORT).show();
 		if (w != 0 && h != 0) {
 			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 			mCanvas = new Canvas(mBitmap);
@@ -77,46 +76,27 @@ public class AudioChunkCanvas extends View {
 		canvas.drawPath(mPath, chunkPaint);
 		
 		float end = Math.max(endCursor, startCursor + GAP);
-		canvas.drawRect(startCursor, 0, end, getHeight(), cursorPaint);
+		end = Math.max(end, startCursor);
+		
+		float start = Math.min(startCursor, endCursor);
+		canvas.drawRect(start, 0, end, getHeight(), cursorPaint);
 	}
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
-				if (isSingleCursor()) {
-					moveSingleCursor(event.getX());
-				}
+				setSingleCursor(event.getX());
+				moveSingleCursor(event.getX());
 				break;
 			
 			case MotionEvent.ACTION_MOVE:
-				if (isSingleCursor()) {
-					moveSingleCursor(event.getX());
-				} else {
-					moveClosestCursor(event.getX());
-				}
-				break;
-			
-			case MotionEvent.ACTION_UP:
-				tryMergeCursors();
+				endCursor = event.getX();
 				break;
 		}
 		invalidate();
 		
 		return true;
-	}
-	
-	public void moveClosestCursor(float touchX) {
-		float distanceToStart = Math.abs(touchX - startCursor);
-		float distanceToEnd = Math.abs(touchX - endCursor);
-		
-		if (distanceToStart <= TOLERANCE || distanceToEnd <= TOLERANCE) {
-			if (distanceToStart < distanceToEnd) {
-				startCursor = touchX;
-			} else {
-				endCursor = touchX;
-			}
-		}
 	}
 	
 	public void moveSingleCursor(float newX) {
@@ -127,12 +107,6 @@ public class AudioChunkCanvas extends View {
 	
 	public boolean isSingleCursor() {
 		return startCursor == endCursor;
-	}
-	
-	public void tryMergeCursors() {
-		if (Math.abs(startCursor - endCursor) <= TOLERANCE) {
-			startCursor = endCursor;
-		}
 	}
 	
 	public void genChunkPath(int startIndex, int endIndex) {
@@ -149,6 +123,8 @@ public class AudioChunkCanvas extends View {
 			prevX = curX;
 			prevY = curY;
 		}
+		
+		invalidate();
 	}
 	
 	public float getCursor() {
