@@ -25,8 +25,6 @@ public class AudioChunkCanvas extends View {
 	private static final int TOLERANCE = 20;
 	
 	private AudioChunk chunk;
-	private Bitmap mBitmap;
-	private Canvas mCanvas;
 	private Path mPath;
 	private Paint chunkPaint;
 	private Paint cursorPaint;
@@ -61,9 +59,6 @@ public class AudioChunkCanvas extends View {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 		if (w != 0 && h != 0) {
-			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-			mCanvas = new Canvas(mBitmap);
-			
 			genChunkPath(0, w / GAP);
 			setSingleCursor(w / (GAP * 2));
 		}
