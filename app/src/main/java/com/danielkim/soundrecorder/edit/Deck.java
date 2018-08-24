@@ -17,13 +17,21 @@ public class Deck implements AudioProvider, EventHandler {
         return data.remove(c);
     }
 
+    public Channel getChannel(int index){
+        if(index < 0 || index > data.size()){
+            return null;
+        }else{
+            return data.get(index);
+        }
+    }
+
     public void render(String fileName) {
         throw new NotImplementedException();
     }
 
     @Override
     public int getTargetedFlag(){
-        return EffectTarget.DOCK;
+        return EffectTarget.DECK;
     }
     @Override
     public boolean handleEvent(Event toHandle) {

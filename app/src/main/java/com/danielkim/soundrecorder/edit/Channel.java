@@ -15,10 +15,16 @@ public class Channel implements AudioProvider, EventHandler {
 	public void add(AudioChunk chunk) {
 		data.add(chunk);
 	}
-	
-	public void remove(AudioChunk chunk) {
-		data.remove(chunk);
-	}
+
+    public void remove(AudioChunk chunk) {
+        data.remove(chunk);
+    }
+    public void remove(int index) {
+        data.remove(index);
+    }
+    public void remove(long sample) {
+        data.remove(getChunkForIndex(sample));
+    }
 
 	@Override
 	public float getSample(long sampleIndex) {
