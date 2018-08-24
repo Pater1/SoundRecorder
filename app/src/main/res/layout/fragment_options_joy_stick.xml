@@ -6,7 +6,9 @@
     tools:context=".fragments.OptionsJoyStickFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
+        android:id="@+id/optionsJoystickCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

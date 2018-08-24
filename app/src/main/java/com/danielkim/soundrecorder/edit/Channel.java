@@ -1,5 +1,6 @@
 package com.danielkim.soundrecorder.edit;
 
+import com.danielkim.soundrecorder.edit.events.EffectTarget;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
@@ -14,10 +15,16 @@ public class Channel implements AudioProvider, EventHandler {
 	public void add(AudioChunk chunk) {
 		data.add(chunk);
 	}
-	
-	public void remove(AudioChunk chunk) {
-		data.remove(chunk);
-	}
+
+    public void remove(AudioChunk chunk) {
+        data.remove(chunk);
+    }
+    public void remove(int index) {
+        data.remove(index);
+    }
+    public void remove(long sample) {
+        data.remove(getChunkForIndex(sample));
+    }
 
 	@Override
 	public float getSample(long sampleIndex) {
@@ -77,8 +84,32 @@ public class Channel implements AudioProvider, EventHandler {
 		sampleRate = setTo;
 	}
 
+	public AudioChunk getChunkForIndex(long sampleIndex){
+		for(AudioChunk c: data){
+			if(sampleIndex >= c.getStartIndex() && sampleIndex < c.getEndIndex()){
+				return c;
+			}
+		}
+		return null;
+	}
+	@Override
+	public int getTargetedFlag(){
+		return EffectTarget.CHANNEL;
+	}
 	@Override
 	public boolean handleEvent(Event toHandle) {
-		throw new NotImplementedException();
+		if(!toHandle.applyEvent(this)){
+			AudioChunk eA = getChunkForIndex(toHandle.getEffectStartSampleIndex());
+			AudioChunk eB = getChunkForIndex(toHandle.getEffectStartSampleIndex());
+			boolean bA = false, bB = false;
+			if(eA != null){
+				bA = eA.handleEvent(toHandle);
+			}
+			if(eB != null && eB != eA){
+				bB = eB.handleEvent(toHandle);
+			}
+			return bA || bB;
+		}
+		return true;
 	}
 }

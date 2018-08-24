@@ -32,7 +32,7 @@ public class AudioChunkCanvas extends View {
 	private Bitmap mBitmap;
 	private Canvas mCanvas;
 	
-	Context context;
+
 	
 	public AudioChunkCanvas(Context context, AudioChunk chunk) {
 		super(context);
