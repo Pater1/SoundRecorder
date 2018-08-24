@@ -10,6 +10,8 @@ import android.view.View;
 
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 
+import java.util.List;
+
 public class OptionsJoystickCanvas extends View {
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -20,6 +22,7 @@ public class OptionsJoystickCanvas extends View {
     private float currentX;
     private float currentY;
     private static final float TOLERANCE = 100;
+
 
     Context context;
 
@@ -64,6 +67,5 @@ public class OptionsJoystickCanvas extends View {
         super.onDraw(canvas);
 
         canvas.drawPath(mPath, mPaint);
-        canvas.dra
     }
 }
