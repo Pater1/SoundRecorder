@@ -6,6 +6,8 @@ import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Channel implements AudioProvider, EventHandler {
@@ -91,6 +93,22 @@ public class Channel implements AudioProvider, EventHandler {
 			}
 		}
 		return null;
+	}
+
+	public List<AudioChunk> getChunksForIndexes(long sampleIndexStart, long sampleIndexEnd){
+		List<AudioChunk> ret = new ArrayList<>();
+		for(AudioChunk c: data){
+			if(c.getEndIndex() > sampleIndexStart || c.getStartIndex() < sampleIndexEnd){
+				ret.add(c);
+			}
+		}
+		Collections.sort(ret, new Comparator<AudioChunk>() {
+			@Override
+			public int compare(AudioChunk t0, AudioChunk t1) {
+				return (int)(t0.getStartIndex() - t1.getStartIndex());
+			}
+		});
+		return ret;
 	}
 	@Override
 	public int getTargetedFlag(){
