@@ -20,15 +20,17 @@ programmatically.
 @SuppressLint("ViewConstructor")
 public class AudioChunkCanvas extends View {
 	
-	private static final int GAP = 4;
-	private static final int SCALE = 1;
-	private static final int TOLERANCE = 20;
+	public static final int GAP = 4;
+	public static final int SCALE = 1;
+	public static final int TOLERANCE = 20;
 	
 	private AudioChunk chunk;
 	private Path mPath;
 	private Paint chunkPaint;
 	private Paint cursorPaint;
-	private float startCursor, endCursor;
+	private Float startCursor, endCursor;
+	private Bitmap mBitmap;
+	private Canvas mCanvas;
 	
 	Context context;
 	
@@ -49,7 +51,7 @@ public class AudioChunkCanvas extends View {
 		cursorPaint.setAntiAlias(true);
 		cursorPaint.setColor(getResources().getColor(R.color.cursor));
 		cursorPaint.setStyle(Paint.Style.FILL);
-		cursorPaint.setAlpha(100);
+		cursorPaint.setAlpha(150);
 		cursorPaint.setStrokeWidth(4f);
 		
 		this.chunk = chunk;
@@ -59,22 +61,37 @@ public class AudioChunkCanvas extends View {
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 		if (w != 0 && h != 0) {
-			genChunkPath(0, w / GAP);
+			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+			mCanvas = new Canvas(mBitmap);
+			
+			genChunkPath((int) chunk.getStartIndex(), (int) chunk.getEndIndex());
 			setSingleCursor(w / (GAP * 2));
 		}
 	}
 	
+	public void resize(int width, int height) {
+		onSizeChanged((int) (chunk.getLength() * GAP), height, getWidth(), getHeight());
+	}
+	
+	public void resize(int width) {
+		resize(width, getHeight());
+	}
+ 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		
 		canvas.drawPath(mPath, chunkPaint);
+		mCanvas.drawPath(mPath, chunkPaint);
 		
-		float end = Math.max(endCursor, startCursor + GAP);
-		end = Math.max(end, startCursor);
-		
-		float start = Math.min(startCursor, endCursor);
-		canvas.drawRect(start, 0, end, getHeight(), cursorPaint);
+		if (isCursorPresent()) {
+			float end = Math.max(endCursor, startCursor + GAP);
+			end = Math.max(end, startCursor);
+			
+			float start = Math.min(startCursor, endCursor);
+			canvas.drawRect(start, 0, end, getHeight(), cursorPaint);
+			mCanvas.drawRect(start, 0, end, getHeight(), cursorPaint);
+		}
 	}
 	
 	@Override
@@ -101,7 +118,7 @@ public class AudioChunkCanvas extends View {
 	}
 	
 	public boolean isSingleCursor() {
-		return startCursor == endCursor;
+		return startCursor != null && endCursor != null && startCursor == endCursor;
 	}
 	
 	public void genChunkPath(int startIndex, int endIndex) {
@@ -122,7 +139,15 @@ public class AudioChunkCanvas extends View {
 		invalidate();
 	}
 	
-	public float getCursor() {
+	public boolean isCursorPresent() {
+		return startCursor != null && endCursor != null;
+	}
+	
+	public void setSingleCursor(float cursor) {
+		startCursor = endCursor = cursor;
+	}
+	
+	public Float getCursor() {
 		if (!isSingleCursor()) {
 			throw new OperationCanceledException("there are 2 cursors present");
 		}
@@ -130,7 +155,11 @@ public class AudioChunkCanvas extends View {
 		return startCursor;
 	}
 	
-	public void setSingleCursor(float cursor) {
-		startCursor = endCursor = cursor;
+	public Bitmap getmBitmap() {
+		return mBitmap;
+	}
+	
+	public AudioChunk getChunk() {
+		return chunk;
 	}
 }
