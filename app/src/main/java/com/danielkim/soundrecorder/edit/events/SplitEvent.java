@@ -6,12 +6,8 @@ import com.danielkim.soundrecorder.edit.SubChunk;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 
 public class SplitEvent extends Event {
-    public SplitEvent(long effectStartSampleIndex, long effectStopSampleIndex, int effectChannel) {
-        super(effectStartSampleIndex, effectStopSampleIndex, effectChannel, EffectTarget.CHANNEL | EffectTarget.CHUNK);
-
-        if(effectStartSampleIndex != effectStopSampleIndex){
-            throw new IllegalArgumentException("effect start and stop indexes must be the same");
-        }
+    public SplitEvent(long effectSampleIndex, int effectChannel) {
+        super(effectSampleIndex, effectSampleIndex, effectChannel, EffectTarget.CHANNEL | EffectTarget.CHUNK);
     }
 
     private Channel inChannel = null;

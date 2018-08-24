@@ -10,6 +10,12 @@ import java.util.List;
 
 public class Deck implements AudioProvider, EventHandler {
     private List<Channel> data = new ArrayList<>();
+    public boolean add(Channel c){
+        return data.add(c);
+    }
+    public boolean remove(Channel c){
+        return data.remove(c);
+    }
 
     public void render(String fileName) {
         throw new NotImplementedException();
