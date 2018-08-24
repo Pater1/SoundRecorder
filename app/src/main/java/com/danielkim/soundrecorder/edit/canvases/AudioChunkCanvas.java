@@ -30,7 +30,7 @@ public class AudioChunkCanvas extends View {
 	private Paint cursorPaint;
 	private float startCursor, endCursor;
 	
-	Context context;
+
 	
 	public AudioChunkCanvas(Context context, AudioChunk chunk) {
 		super(context);
