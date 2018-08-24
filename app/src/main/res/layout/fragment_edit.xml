@@ -15,11 +15,32 @@
         <!--android:id="@+id/audioChunkCanvas"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent"/>-->
+        <FrameLayout
+            android:id="@+id/channelLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
     </TableRow>
 
     <TableRow
         android:id="@+id/joysticksTableRow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.2"/>
+        android:layout_weight="0.2">
+
+        <FrameLayout
+            android:id="@+id/scrollingJoystickLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/controlsJoystickLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+    </TableRow>
 </TableLayout>
