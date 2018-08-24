@@ -1,9 +1,7 @@
 package com.danielkim.soundrecorder.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -12,20 +10,17 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
+import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.danielkim.soundrecorder.R;
-import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
+import com.danielkim.soundrecorder.edit.fragments.AudioChunkFragment;
+import com.danielkim.soundrecorder.edit.fragments.ChannelFragment;
 import com.danielkim.soundrecorder.fragments.EditFragment;
 import com.danielkim.soundrecorder.fragments.FileViewerFragment;
-import com.danielkim.soundrecorder.fragments.LicensesFragment;
 import com.danielkim.soundrecorder.fragments.RecordFragment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity implements ViewPager.OnPageChangeListener {
@@ -84,15 +79,22 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
 	
 	}
 	
+	int count = 0;
 	@Override
 	public void onPageSelected(int position) {
 		if (position == 2) {
-			// test
-			TableRow canvasRow = (TableRow) findViewById(R.id.channelTableRow);
-			AudioChunkCanvas canvas = (AudioChunkCanvas) canvasRow.getChildAt(0);
-			TableRow.LayoutParams params = (TableRow.LayoutParams) canvas.getLayoutParams();
-			params.width = canvasRow.getWidth();
-			canvas.setLayoutParams(params);
+			// test AudioChunkFragmentResize
+//			TableRow channelRow = (TableRow) findViewById(R.id.channelTableRow);
+//			AudioChunkFragment chunkFragment = (AudioChunkFragment) getSupportFragmentManager()
+//					.findFragmentByTag(EditFragment.CHANNEL_FRAGMENT_TAG);
+//			TableLayout.LayoutParams params = (TableLayout.LayoutParams) channelRow.getLayoutParams();
+//			params.width = channelRow.getWidth();
+//			chunkFragment.resizeCanvas(params.width, params.height);
+			
+			// ChannelFragment resize
+			TableRow channelRow = (TableRow) findViewById(R.id.channelTableRow);
+			ChannelFragment channelFragment = (ChannelFragment) getSupportFragmentManager().findFragmentByTag(EditFragment.CHANNEL_FRAGMENT_TAG);
+			channelFragment.resize(channelRow.getWidth());
 		}
 	}
 	
@@ -102,7 +104,11 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
 	
 	public class MyAdapter extends FragmentPagerAdapter {
 		
-		private String[] titles = {getString(R.string.tab_title_record), getString(R.string.tab_title_saved_recordings), getString(R.string.tab_title_edit)};
+		private String[] titles = {
+				getString(R.string.tab_title_record),
+				getString(R.string.tab_title_saved_recordings),
+				getString(R.string.tab_title_edit)
+		};
 		private Fragment[] fragments;
 		
 		public MyAdapter(FragmentManager fm) {
