@@ -28,6 +28,11 @@ public class Channel implements AudioProvider, EventHandler {
         data.remove(getChunkForIndex(sample));
     }
 
+	public AudioChunk get(int index) {
+		return data.get(index);
+	}
+	public AudioChunk get(long sample) { return getChunkForIndex(sample); }
+
 	@Override
 	public long getLength() {
 		long lastEnd = 0;
@@ -74,14 +79,6 @@ public class Channel implements AudioProvider, EventHandler {
 		}else{
 			return 0;
 		}
-	}
-	
-	public AudioChunk getChunk(int index) {
-		if (index < 0 || index >= data.size()) {
-			throw new IllegalArgumentException("index out of bounds: " + index);
-		}
-		
-		return data.get(index);
 	}
 	
 	public int getDataSize() {
