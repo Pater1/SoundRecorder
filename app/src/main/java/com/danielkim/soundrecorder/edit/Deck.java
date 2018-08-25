@@ -1,9 +1,12 @@
 package com.danielkim.soundrecorder.edit;
 
+import com.danielkim.soundrecorder.DBHelper;
+import com.danielkim.soundrecorder.RecordingService;
 import com.danielkim.soundrecorder.edit.events.EffectTarget;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
+import com.danielkim.soundrecorder.edit.helpers.TimeHelper;
 import com.danielkim.soundrecorder.edit.renderers.WAVRenderer;
 
 import java.util.ArrayList;
@@ -26,7 +29,6 @@ public class Deck implements AudioProvider, EventHandler {
         }
     }
 
-
     @Override
     public long getLength() {
         long lastEnd = 0;
@@ -39,8 +41,18 @@ public class Deck implements AudioProvider, EventHandler {
         return lastEnd;
     }
 
-    public void render(String fileName) {
-        new WAVRenderer().render(fileName, this);
+    public void render(String filePath, String fileName) {
+        new WAVRenderer().render(filePath + "\\" + fileName + ".wav", this);
+        RecordingService rec = new RecordingService();//.addRecording(fileName, filePath, getLength());
+        rec.setmStartingTimeMillis(System.currentTimeMillis());
+        rec.setmElapsedMillis(
+                TimeHelper.microsecondToMillisecond(
+                        TimeHelper.sampleIndexToMicrosecond(getLength(), (int)getSampleRate())
+                )
+        );
+        rec.setmFileName(fileName + ".wav");
+        rec.setmFilePath(filePath + "\\" + fileName + ".wav");
+        rec.stopRecording();
     }
 
     @Override
