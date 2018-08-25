@@ -25,8 +25,6 @@ import com.danielkim.soundrecorder.fragments.RecordFragment;
 
 public class MainActivity extends ActionBarActivity implements ViewPager.OnPageChangeListener {
 	
-	private static final String LOG_TAG = MainActivity.class.getSimpleName();
-	
 	private PagerSlidingTabStrip tabs;
 	private ViewPager pager;
 	private MyAdapter adapter;
@@ -79,22 +77,12 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
 	
 	}
 	
-	int count = 0;
 	@Override
 	public void onPageSelected(int position) {
 		if (position == 2) {
-			// test AudioChunkFragmentResize
-//			TableRow channelRow = (TableRow) findViewById(R.id.channelTableRow);
-//			AudioChunkFragment chunkFragment = (AudioChunkFragment) getSupportFragmentManager()
-//					.findFragmentByTag(EditFragment.CHANNEL_FRAGMENT_TAG);
-//			TableLayout.LayoutParams params = (TableLayout.LayoutParams) channelRow.getLayoutParams();
-//			params.width = channelRow.getWidth();
-//			chunkFragment.resizeCanvas(params.width, params.height);
-			
-			// ChannelFragment resize
-			TableRow channelRow = (TableRow) findViewById(R.id.channelTableRow);
-			ChannelFragment channelFragment = (ChannelFragment) getSupportFragmentManager().findFragmentByTag(EditFragment.CHANNEL_FRAGMENT_TAG);
-			channelFragment.resize(channelRow.getWidth());
+			EditFragment editFragment = (EditFragment) getSupportFragmentManager()
+					.findFragmentByTag("android:switcher:" + R.id.pager + ":" + position);
+			editFragment.resizeComponents();
 		}
 	}
 	
