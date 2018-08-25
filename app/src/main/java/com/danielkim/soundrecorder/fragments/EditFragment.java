@@ -9,6 +9,9 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.Toast;
 
@@ -16,8 +19,10 @@ import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
 import com.danielkim.soundrecorder.edit.Channel;
+import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.fragments.AudioChunkFragment;
 import com.danielkim.soundrecorder.edit.fragments.ChannelFragment;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 import java.util.Random;
 
@@ -31,7 +36,7 @@ import java.util.Random;
  */
 public class EditFragment extends Fragment {
 	
-	public static final String CHANNEL_FRAGMENT_TAG = "channel_fragment";
+	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
 	
 	private OnFragmentInteractionListener mListener;
 	
@@ -71,22 +76,26 @@ public class EditFragment extends Fragment {
 //		transaction.commit();
 		
 		// test Channel
-		ChannelFragment channelFragment = ChannelFragment.newInstance(genRandomChannel());
+//		ChannelFragment channelFragment = ChannelFragment.newInstance(genRandomChannel());
+//		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//		transaction.add(R.id.channelLayout, channelFragment, CHANNEL_FRAGMENT_TAG);
+//		transaction.commit();
+		
+		DeckFragment deckFragment = DeckFragment.newInstance(genRandomDeck());
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
-		transaction.add(R.id.channelLayout, channelFragment, CHANNEL_FRAGMENT_TAG);
+		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
 		return v;
 	}
 	
 	// gen test data
 	private AudioChunk genRandomAudioChunk() {
-		Random gen = new Random();
-		int len = gen.nextInt(500) + 500;
-		float[] pcm = new float[len];
-		for (int i = 0; i < pcm.length; i++) {
-			pcm[i] = gen.nextFloat() * 1000;
+		Random rand = new Random();
+		float[] memory = new float[rand.nextInt(100) + 50];
+		for (int i = 0; i < memory.length; i++) {
+			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
 		}
-		return new AudioChunkInMemory(pcm);
+		return new AudioChunkInMemory(memory);
 	}
 	
 	private Channel genRandomChannel() {
@@ -96,12 +105,29 @@ public class EditFragment extends Fragment {
 		
 		for (int i = 0; i < (gen.nextInt(4) + 2); i++) {
 			AudioChunk chunk = genRandomAudioChunk();
-			chunk.setStartIndex(sampleLength);
+			boolean shouldGenGap = gen.nextBoolean();
+			if (shouldGenGap) {
+				int gap = gen.nextInt(100) + 50;
+				chunk.setStartIndex(sampleLength + gap);
+			} else {
+				chunk.setStartIndex(sampleLength);
+			}
 			sampleLength = chunk.getEndIndex();
 			c.add(chunk);
 		}
 		
 		return c;
+	}
+	
+	private Deck genRandomDeck() {
+		Deck d = new Deck();
+		Random gen = new Random();
+		
+		for (int i = 0; i < (gen.nextInt(4) + 2); i++) {
+			d.add(genRandomChannel());
+		}
+		
+		return d;
 	}
 	// end gen test data
 	
@@ -114,6 +140,17 @@ public class EditFragment extends Fragment {
 //			throw new RuntimeException(context.toString()
 //					+ " must implement OnFragmentInteractionListener");
 //		}
+	}
+	
+	public void resizeComponents() {
+//		ViewGroup.LayoutParams deckLayoutParams = getActivity().findViewById(R.id.container).getLayoutParams();
+//		Toast.makeText(getActivity(), "Type: " + deckLayoutParams.getClass(), Toast.LENGTH_SHORT).show();
+//		Toast.makeText(getActivity(), "Width: " + deckLayoutParams.width, Toast.LENGTH_SHORT).show();
+//		Toast.makeText(getActivity(), "Height: " + deckLayoutParams.height, Toast.LENGTH_SHORT).show();
+		
+		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
+		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
+		deckFragment.resize(container.getWidth());
 	}
 	
 	@Override

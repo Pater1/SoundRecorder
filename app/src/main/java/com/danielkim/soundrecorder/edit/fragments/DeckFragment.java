@@ -6,12 +6,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
+import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.views.StationaryScrollView;
 
 /**
@@ -23,6 +28,8 @@ import com.danielkim.soundrecorder.edit.views.StationaryScrollView;
  * create an instance of this fragment.
  */
 public class DeckFragment extends Fragment {
+	
+	private static final int MARGIN = 10;
 	
 	private Deck deck;
 	private OnFragmentInteractionListener mListener;
@@ -55,9 +62,25 @@ public class DeckFragment extends Fragment {
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View v = inflater.inflate(R.layout.fragment_deck, container, false);
-		StationaryScrollView channelScrollView = (StationaryScrollView) v.findViewById(R.id.channelScrollView);
-		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//		StationaryScrollView channelScrollView = (StationaryScrollView) v.findViewById(R.id.channelScrollView);
+//		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+		LinearLayout channelLinearLayout = (LinearLayout) v.findViewById(R.id.channelLinearLayout);
 		
+		int curIndex = 0;
+		Channel curChannel;
+		
+		while ((curChannel = deck.getChannel(curIndex++)) != null) {
+			ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel);
+			channelLinearLayout.addView(channelCanvas);
+			
+			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) channelCanvas.getLayoutParams();
+			params.bottomMargin = MARGIN;
+			params.topMargin = MARGIN;
+			params.leftMargin = MARGIN;
+			params.rightMargin = MARGIN;
+			channelCanvas.setLayoutParams(params);
+			
+		}
 		return v;
 	}
 	
@@ -76,6 +99,18 @@ public class DeckFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		mListener = null;
+	}
+	
+	public void resize(int width, int height) {
+		LinearLayout channelLinearLayout = (LinearLayout) getActivity().findViewById(R.id.channelLinearLayout);
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			ChannelCanvas canvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+			canvas.resize(width, height);
+		}
+	}
+	
+	public void resize(int width) {
+		resize(width, 300);
 	}
 	
 	/**
