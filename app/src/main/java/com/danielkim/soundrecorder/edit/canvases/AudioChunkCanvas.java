@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.OperationCanceledException;
@@ -14,6 +15,8 @@ import android.widget.Toast;
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 
+import java.util.Random;
+
 /* In order for this view to work, it needs an AudioChunk to render, thus we have to create this
 programmatically.
  */
@@ -21,18 +24,17 @@ programmatically.
 public class AudioChunkCanvas extends View {
 	
 	public static final int GAP = 4;
-	public static final int SCALE = 1;
+	public static final int SCALE = 100;
 	public static final int TOLERANCE = 20;
 	
 	private AudioChunk chunk;
 	private Path mPath;
-	private Paint chunkPaint;
-	private Paint cursorPaint;
+	private Paint chunkPaint, cursorPaint, borderPaint;
 	private Float startCursor, endCursor;
 	private Bitmap mBitmap;
 	private Canvas mCanvas;
 	
-
+	private Context context;
 	
 	public AudioChunkCanvas(Context context, AudioChunk chunk) {
 		super(context);
@@ -54,6 +56,12 @@ public class AudioChunkCanvas extends View {
 		cursorPaint.setAlpha(150);
 		cursorPaint.setStrokeWidth(4f);
 		
+		borderPaint = new Paint();
+		borderPaint.setAntiAlias(true);
+		borderPaint.setColor(Color.BLACK);
+		borderPaint.setStyle(Paint.Style.STROKE);
+		borderPaint.setStrokeWidth(4f);
+		
 		this.chunk = chunk;
 	}
 	
@@ -73,15 +81,11 @@ public class AudioChunkCanvas extends View {
 		onSizeChanged((int) (chunk.getLength() * GAP), height, getWidth(), getHeight());
 	}
 	
-	public void resize(int width) {
-		resize(width, getHeight());
-	}
- 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		
-		canvas.drawPath(mPath, chunkPaint);
+		mCanvas.drawRect(0, 0, getCanvasWidth(), getCanvasHeight(), borderPaint);
 		mCanvas.drawPath(mPath, chunkPaint);
 		
 		if (isCursorPresent()) {
@@ -89,7 +93,6 @@ public class AudioChunkCanvas extends View {
 			end = Math.max(end, startCursor);
 			
 			float start = Math.min(startCursor, endCursor);
-			canvas.drawRect(start, 0, end, getHeight(), cursorPaint);
 			mCanvas.drawRect(start, 0, end, getHeight(), cursorPaint);
 		}
 	}
@@ -122,15 +125,19 @@ public class AudioChunkCanvas extends View {
 	}
 	
 	public void genChunkPath(int startIndex, int endIndex) {
+		final float MIDDLE = mCanvas.getHeight() / 2;
 		mPath.reset();
-		float prevX = startIndex, prevY = chunk.getSample(endIndex);
-		endIndex = Math.min(endIndex, getWidth() / GAP);
+		
+		float prevX = startIndex, prevY = (chunk.getSample(endIndex) * SCALE) + MIDDLE;
+		endIndex = Math.min(endIndex, getCanvasWidth() / GAP);
+		mPath.moveTo(prevX, prevY);
 		
 		for (int i = startIndex; i <= endIndex; i++) {
 			float curX = GAP * i;
-			float curY = chunk.getSample(i) * SCALE;
+			float curY = (chunk.getSample(i) * SCALE) + MIDDLE;
 			
-			mPath.quadTo(prevX, prevY, curX, curY);
+//			mPath.quadTo(prevX, prevY, curX, curY);
+			mPath.lineTo(curX, curY);
 			
 			prevX = curX;
 			prevY = curY;
@@ -161,5 +168,13 @@ public class AudioChunkCanvas extends View {
 	
 	public AudioChunk getChunk() {
 		return chunk;
+	}
+	
+	public int getCanvasWidth() {
+		return mCanvas.getWidth();
+	}
+	
+	public int getCanvasHeight() {
+		return mCanvas.getHeight();
 	}
 }

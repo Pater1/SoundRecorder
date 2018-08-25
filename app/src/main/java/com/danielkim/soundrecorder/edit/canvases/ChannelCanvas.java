@@ -44,29 +44,23 @@ public class ChannelCanvas extends View {
 		
 		int spaceTaken = 0;
 		for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
-			if (audioChunkCanvas.getWidth() <= 0) {
+			if (audioChunkCanvas.getCanvasWidth() <= 0) {
 				resize(getWidth());
 			}
-			audioChunkCanvas.draw(canvas);
+//			audioChunkCanvas.draw(canvas);
+			audioChunkCanvas.draw(null);
 			Bitmap chunkBitmap = audioChunkCanvas.getmBitmap();
 			canvas.drawBitmap(chunkBitmap, spaceTaken, 0, null);
-			spaceTaken += (audioChunkCanvas.getChunk().getEndIndex() * AudioChunkCanvas.GAP);
+			spaceTaken += (audioChunkCanvas.getCanvasWidth());
 		}
 	}
 	
 	public void resize(int width) {
-//		ViewGroup.LayoutParams params = getLayoutParams();
-//		params.width = width;
-//		setLayoutParams(params);
-//
-//		for (AudioChunkCanvas canvas : chunkCanvasList) {
-//			canvas.resize(width);
-//		}
 		resize(width, getHeight());
 	}
 	
 	public void resize(int width, int height) {
-		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+		LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
 		params.width = width;
 		params.height = height;
 		setLayoutParams(params);
