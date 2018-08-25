@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/editTableLayout"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context=".fragments.EditFragment">
 
     <TableRow
-        android:id="@+id/channelTableRow"
+        android:id="@+id/deckTableRow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.8">
@@ -16,7 +17,7 @@
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent"/>-->
         <FrameLayout
-            android:id="@+id/channelLayout"
+            android:id="@+id/deckLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
