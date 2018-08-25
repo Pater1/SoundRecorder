@@ -1,19 +1,28 @@
 package com.danielkim.soundrecorder.fragments;
 
 import android.app.Activity;
-import android.content.Context;
+//import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
-import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
+import com.danielkim.soundrecorder.edit.Channel;
+import com.danielkim.soundrecorder.edit.Deck;
+import com.danielkim.soundrecorder.edit.fragments.AudioChunkFragment;
+import com.danielkim.soundrecorder.edit.fragments.ChannelFragment;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 import java.util.Random;
 
@@ -26,6 +35,8 @@ import java.util.Random;
  * create an instance of this fragment.
  */
 public class EditFragment extends Fragment {
+	
+	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
 	
 	private OnFragmentInteractionListener mListener;
 	
@@ -56,20 +67,69 @@ public class EditFragment extends Fragment {
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
-		TableRow canvasTableRow = (TableRow) v.findViewById(R.id.channelTableRow);
+//		TableRow canvasTableRow = (TableRow) v.findViewById(R.id.channelTableRow);
 		
-		// test
-		Random gen = new Random();
-		float[] pcm = new float[100];
-		for (int i = 0; i < pcm.length; i++) {
-			pcm[i] = gen.nextFloat() * 1000;
-		}
-		AudioChunk chunk = new AudioChunkInMemory(pcm);
-		AudioChunkCanvas canvas = new AudioChunkCanvas(getActivity(), chunk);
-		canvasTableRow.addView(canvas);
+		// test AudioChunk
+//		AudioChunkFragment chunkFragment = AudioChunkFragment.newInstance(genRandomAudioChunk());
+//		android.support.v4.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//		transaction.add(R.id.channelLayout, chunkFragment, CHANNEL_FRAGMENT_TAG);
+//		transaction.commit();
 		
+		// test Channel
+//		ChannelFragment channelFragment = ChannelFragment.newInstance(genRandomChannel());
+//		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//		transaction.add(R.id.channelLayout, channelFragment, CHANNEL_FRAGMENT_TAG);
+//		transaction.commit();
+		
+		DeckFragment deckFragment = DeckFragment.newInstance(genRandomDeck());
+		FragmentTransaction transaction = getFragmentManager().beginTransaction();
+		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
+		transaction.commit();
 		return v;
 	}
+	
+	// gen test data
+	private AudioChunk genRandomAudioChunk() {
+		Random rand = new Random();
+		float[] memory = new float[rand.nextInt(100) + 50];
+		for (int i = 0; i < memory.length; i++) {
+			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
+		}
+		return new AudioChunkInMemory(memory);
+	}
+	
+	private Channel genRandomChannel() {
+		Channel c = new Channel();
+		Random gen = new Random();
+		long sampleLength = 0;
+		
+		for (int i = 0; i < (gen.nextInt(4) + 2); i++) {
+			AudioChunk chunk = genRandomAudioChunk();
+			boolean shouldGenGap = gen.nextBoolean();
+			if (shouldGenGap) {
+				int gap = gen.nextInt(100) + 50;
+				chunk.setStartIndex(sampleLength + gap);
+			} else {
+				chunk.setStartIndex(sampleLength);
+			}
+			sampleLength = chunk.getEndIndex();
+			c.add(chunk);
+		}
+		
+		return c;
+	}
+	
+	private Deck genRandomDeck() {
+		Deck d = new Deck();
+		Random gen = new Random();
+		
+		for (int i = 0; i < (gen.nextInt(4) + 2); i++) {
+			d.add(genRandomChannel());
+		}
+		
+		return d;
+	}
+	// end gen test data
 	
 	@Override
 	public void onAttach(Activity context) {
@@ -80,6 +140,17 @@ public class EditFragment extends Fragment {
 //			throw new RuntimeException(context.toString()
 //					+ " must implement OnFragmentInteractionListener");
 //		}
+	}
+	
+	public void resizeComponents() {
+//		ViewGroup.LayoutParams deckLayoutParams = getActivity().findViewById(R.id.container).getLayoutParams();
+//		Toast.makeText(getActivity(), "Type: " + deckLayoutParams.getClass(), Toast.LENGTH_SHORT).show();
+//		Toast.makeText(getActivity(), "Width: " + deckLayoutParams.width, Toast.LENGTH_SHORT).show();
+//		Toast.makeText(getActivity(), "Height: " + deckLayoutParams.height, Toast.LENGTH_SHORT).show();
+		
+		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
+		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
+		deckFragment.resize(container.getWidth());
 	}
 	
 	@Override

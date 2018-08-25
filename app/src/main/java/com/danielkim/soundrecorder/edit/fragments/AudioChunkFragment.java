@@ -1,14 +1,19 @@
 package com.danielkim.soundrecorder.edit.fragments;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TableRow;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
+import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
 
 /**
  * Fragment to display an AudioChunk.
@@ -18,6 +23,7 @@ import com.danielkim.soundrecorder.edit.AudioChunk;
 public class AudioChunkFragment extends Fragment {
 	
 	private AudioChunk chunk;
+	private AudioChunkCanvas canvas;
 	
 	private OnFragmentInteractionListener mListener;
 	
@@ -45,9 +51,26 @@ public class AudioChunkFragment extends Fragment {
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.fragment_audio_chunk, container, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.fragment_audio_chunk, container, false);
+		FrameLayout layout = (FrameLayout) v.findViewById(R.id.canvasLayout);
+		canvas = new AudioChunkCanvas(getActivity(), chunk);
+		layout.addView(canvas);
+		
+		return v;
+	}
+	
+	public void resizeCanvas(int width, int height) {
+		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) canvas.getLayoutParams();
+		params.width = width;
+		params.height = height;
+		canvas.setLayoutParams(params);
+	}
+	
+	public void resizeCanvas(int width) {
+		FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) canvas.getLayoutParams();
+		params.width = width;
+		canvas.setLayoutParams(params);
 	}
 	
 	@Override

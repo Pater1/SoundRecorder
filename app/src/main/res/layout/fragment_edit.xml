@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/editTableLayout"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context=".fragments.EditFragment">
 
     <TableRow
-        android:id="@+id/channelTableRow"
+        android:id="@+id/deckTableRow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.8">
@@ -15,11 +16,32 @@
         <!--android:id="@+id/audioChunkCanvas"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent"/>-->
+        <FrameLayout
+            android:id="@+id/deckLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
     </TableRow>
 
     <TableRow
         android:id="@+id/joysticksTableRow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.2"/>
+        android:layout_weight="0.2">
+
+        <FrameLayout
+            android:id="@+id/scrollingJoystickLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/controlsJoystickLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+    </TableRow>
 </TableLayout>
