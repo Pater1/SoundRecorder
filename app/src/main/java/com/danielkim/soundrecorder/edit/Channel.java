@@ -29,6 +29,18 @@ public class Channel implements AudioProvider, EventHandler {
     }
 
 	@Override
+	public long getLength() {
+		long lastEnd = 0;
+		for(AudioChunk c: data){
+			long l = c.getEndIndex();
+			if(l > lastEnd){
+				lastEnd = l;
+			}
+		}
+		return lastEnd;
+	}
+
+	@Override
 	public float getSample(long sampleIndex) {
 		for(AudioChunk c: data){
 			float l = c.getSample(sampleIndex - c.getStartIndex());

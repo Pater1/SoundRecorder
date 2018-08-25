@@ -4,6 +4,7 @@ import com.danielkim.soundrecorder.edit.events.EffectTarget;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
+import com.danielkim.soundrecorder.edit.renderers.WAVRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,21 @@ public class Deck implements AudioProvider, EventHandler {
         }
     }
 
+
+    @Override
+    public long getLength() {
+        long lastEnd = 0;
+        for(Channel c: data){
+            long l = c.getLength();
+            if(l > lastEnd){
+                lastEnd = l;
+            }
+        }
+        return lastEnd;
+    }
+
     public void render(String fileName) {
-        throw new NotImplementedException();
+        new WAVRenderer().render(fileName, this);
     }
 
     @Override
