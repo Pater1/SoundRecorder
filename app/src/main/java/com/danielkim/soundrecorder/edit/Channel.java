@@ -103,7 +103,6 @@ public class Channel implements AudioProvider, EventHandler {
 		}
 		return null;
 	}
-
 	public List<AudioChunk> getChunksForIndexes(long sampleIndexStart, long sampleIndexEnd){
 		List<AudioChunk> ret = new ArrayList<>();
 		for(AudioChunk c: data){
@@ -117,6 +116,21 @@ public class Channel implements AudioProvider, EventHandler {
 				return (int)(t0.getStartIndex() - t1.getStartIndex());
 			}
 		});
+		return ret;
+	}
+	public List<AudioChunk> getFlankingChunks(long sampleIndex){
+		List<AudioChunk> ret = new ArrayList<>();
+		ret.add(null);
+		ret.add(null);
+		for(AudioChunk c: data){
+			if(c.getEndIndex() < sampleIndex && (ret.get(0) == null || c.getEndIndex() > ret.get(0).getEndIndex())){
+				ret.set(0, c);
+			}
+
+			if(c.getStartIndex() > sampleIndex && (ret.get(1) == null || c.getStartIndex() < ret.get(1).getStartIndex())){
+				ret.set(1, c);
+			}
+		}
 		return ret;
 	}
 	@Override
