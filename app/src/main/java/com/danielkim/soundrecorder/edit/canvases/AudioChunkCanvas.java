@@ -7,15 +7,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.os.OperationCanceledException;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
-
-import java.util.Random;
 
 /* In order for this view to work, it needs an AudioChunk to render, thus we have to create this
 programmatically.
@@ -87,13 +83,11 @@ public class AudioChunkCanvas extends View {
 		return super.onTouchEvent(event);
 	}
 	
-	
-	
 	public void genChunkPath(int startIndex, int endIndex) {
 		final float MIDDLE = mCanvas.getHeight() / 2;
 		mPath.reset();
 		
-		long length, start = startIndex;
+		long length;
 		float curX = 0;
 		do {
 			length = chunk.getSamples(startIndex, BUFFER);
@@ -106,25 +100,8 @@ public class AudioChunkCanvas extends View {
 				mPath.lineTo(curX, curY);
 				curX += GAP;
 			}
-			start += length;
 		} while (length == BUFFER.length);
-		
-//		float prevY = (chunk.getSample(startIndex) * SCALE) + MIDDLE;
-//		mPath.moveTo(0, prevY);
-//
-//		for (int i = startIndex; i <= endIndex; i++) {
-//			float curX = GAP * i;
-//			float curY = (chunk.getSample(i) * SCALE) + MIDDLE;
-//
-//			mPath.lineTo(curX, curY);
-//		}
-//
-//		invalidate();
 	}
-	
-	
-	
-	
 	
 	public Bitmap getmBitmap() {
 		return mBitmap;
