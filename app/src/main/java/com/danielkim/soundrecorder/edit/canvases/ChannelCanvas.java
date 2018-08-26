@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
@@ -30,6 +29,7 @@ public class ChannelCanvas extends View {
 	private Paint cursorPaint;
 	private int channelIndex;
 	private DeckFragment deckFragment;
+	private boolean areCanvasesInit;
 	
 	Context context;
 	
@@ -59,6 +59,12 @@ public class ChannelCanvas extends View {
 		}
 	}
 	
+	public void addChunk(AudioChunk chunk) {
+		channel.add(chunk);
+		AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, chunk);
+		chunkCanvasList.add(chunkCanvas);
+	}
+	
 	@Override
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
@@ -68,7 +74,7 @@ public class ChannelCanvas extends View {
 		AudioChunk prevChunk = null;
 		for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
 			if (audioChunkCanvas.getCanvasWidth() <= 0) {
-				resize(getHeight());
+				resizeHeight(getHeight());
 			}
 			audioChunkCanvas.draw(null);
 			Bitmap chunkBitmap = audioChunkCanvas.getmBitmap();
@@ -112,19 +118,31 @@ public class ChannelCanvas extends View {
 	
 	public void moveSingleCursor(float newX) {
 		if (Math.abs(newX - getCursor()[0]) <= TOLERANCE) {
-			startCursor = endCursor = newX;
+			setSingleCursor(newX);
 		}
 	}
 	
-	public void resize(int height) {
+	public void resizeHeight(int height) {
 		int totalWidth = 0;
 		for (AudioChunkCanvas canvas : chunkCanvasList) {
 			canvas.resize(height);
 			totalWidth += canvas.getCanvasWidth();
 		}
 		
+		areCanvasesInit = true;
+		resize(totalWidth + 5, height);
+	}
+	
+	public void resizeWidth(int width) {
+		resize(width, getHeight());
+	}
+	
+	public void resize(int width, int height) {
+		if (!areCanvasesInit) {
+			resizeHeight(height);
+		}
 		LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
-		params.width = totalWidth + 5;
+		params.width = width;
 		params.height = height;
 		setLayoutParams(params);
 	}
@@ -137,23 +155,23 @@ public class ChannelCanvas extends View {
 		return startCursor != null && endCursor != null;
 	}
 	
-	public void setSingleCursor(float cursor) {
+	public void setSingleCursor(Float cursor) {
 		startCursor = endCursor = cursor;
 	}
 	
 	public void disableCursor() {
-		startCursor = endCursor = null;
+		setSingleCursor(null);
 	}
 	
-	public float[] getCursor() {
+	public long[] getCursor() {
 		if (isCursorPresent()) {
 			if (!isSingleCursor()) {
 				float start = Math.min(startCursor, endCursor);
 				float end = Math.max(startCursor, endCursor);
-				return new float[]{start, end};
+				return new long[]{(long) (start / GAP), (long) (end / GAP)};
 			}
 			
-			return new float[]{startCursor};
+			return new long[]{(long) (startCursor / GAP)};
 		}
 		
 		return null;
