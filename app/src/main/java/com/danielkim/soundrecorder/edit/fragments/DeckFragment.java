@@ -32,6 +32,7 @@ public class DeckFragment extends Fragment {
 	private static final int MARGIN = 10;
 	
 	private Deck deck;
+	private LinearLayout channelLinearLayout;
 	private OnFragmentInteractionListener mListener;
 	
 	public DeckFragment() {
@@ -62,15 +63,13 @@ public class DeckFragment extends Fragment {
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View v = inflater.inflate(R.layout.fragment_deck, container, false);
-//		StationaryScrollView channelScrollView = (StationaryScrollView) v.findViewById(R.id.channelScrollView);
-//		FragmentTransaction transaction = getFragmentManager().beginTransaction();
-		LinearLayout channelLinearLayout = (LinearLayout) v.findViewById(R.id.channelLinearLayout);
+		channelLinearLayout = (LinearLayout) v.findViewById(R.id.channelLinearLayout);
 		
 		int curIndex = 0;
 		Channel curChannel;
 		
-		while ((curChannel = deck.getChannel(curIndex++)) != null) {
-			ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel);
+		while ((curChannel = deck.getChannel(curIndex)) != null) {
+			ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel, curIndex, this);
 			channelLinearLayout.addView(channelCanvas);
 			
 			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) channelCanvas.getLayoutParams();
@@ -79,7 +78,7 @@ public class DeckFragment extends Fragment {
 			params.leftMargin = MARGIN;
 			params.rightMargin = MARGIN;
 			channelCanvas.setLayoutParams(params);
-			
+			curIndex++;
 		}
 		return v;
 	}
@@ -101,11 +100,20 @@ public class DeckFragment extends Fragment {
 		mListener = null;
 	}
 	
+	public void updateCursor(int selectedChannelIndex) {
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			if (i != selectedChannelIndex) {
+				ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+				channelCanvas.disableCursor();
+				channelCanvas.invalidate();
+			}
+		}
+	}
+	
 	public void resize(int width, int height) {
-		LinearLayout channelLinearLayout = (LinearLayout) getActivity().findViewById(R.id.channelLinearLayout);
 		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
 			ChannelCanvas canvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
-			canvas.resize(width, height);
+			canvas.resize(height);
 		}
 	}
 	
