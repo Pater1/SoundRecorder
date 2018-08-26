@@ -13,11 +13,11 @@ public class StationaryScrollView extends ScrollView {
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		return false;
+		return super.onTouchEvent(ev);
 	}
 	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		return false;
+		return super.onInterceptTouchEvent(ev);
 	}
 }
