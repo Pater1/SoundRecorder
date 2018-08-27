@@ -9,6 +9,8 @@ import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 import com.danielkim.soundrecorder.edit.helpers.TimeHelper;
 import com.danielkim.soundrecorder.edit.renderers.WAVRenderer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +43,10 @@ public class Deck implements AudioProvider, EventHandler {
         return lastEnd;
     }
 
-    public void render(String filePath, String fileName) {
-        new WAVRenderer().render(filePath + "\\" + fileName + ".wav", this);
-        RecordingService rec = new RecordingService();//.addRecording(fileName, filePath, getLength());
+    public void render(String filePath, String fileName) throws IOException {
+        new WAVRenderer().render(fileName, android.os.Environment.getExternalStorageDirectory().getPath() + File.separator + "audio", this);
+
+        RecordingService rec = new RecordingService();
         rec.setmStartingTimeMillis(System.currentTimeMillis());
         rec.setmElapsedMillis(
                 TimeHelper.microsecondToMillisecond(

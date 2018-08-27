@@ -32,4 +32,8 @@ dependencies {
     implementation 'com.jpardogo.materialtabstrip:library:1.0.6'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:support-v4:21.0.3'
+    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
+
+    androidTestImplementation 'com.android.support.test:testing-support-lib:0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.0'
 }

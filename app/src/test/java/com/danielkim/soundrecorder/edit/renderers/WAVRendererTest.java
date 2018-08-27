@@ -5,6 +5,7 @@ import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -19,11 +20,11 @@ public class WAVRendererTest {
     }
 
     @Test
-    public void render() {
-        String path = "C:\\Users\\Patrick Conner\\Desktop\\testFile.wav";
+    public void render() throws IOException {
+        String path = "C:\\Users\\Patrick Conner\\Desktop";
         AudioChunk audio = buildChunkInMemory(new float[44100 * 100]);
         audio.setSampleRate(44100);
 
-        new WAVRenderer().render(path, audio);
+        new WAVRenderer().render("testFile002", path, audio);
     }
 }
