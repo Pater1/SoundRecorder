@@ -32,6 +32,10 @@ public class Channel implements AudioProvider, EventHandler {
 		return data.get(index);
 	}
 	public AudioChunk get(long sample) { return getChunkForIndex(sample); }
+	
+	public boolean contains(AudioChunk chunk) {
+		return data.contains(chunk);
+	}
 
 	@Override
 	public long getLength() {
