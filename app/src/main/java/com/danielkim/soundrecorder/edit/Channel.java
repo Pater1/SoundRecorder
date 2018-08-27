@@ -77,7 +77,7 @@ public class Channel implements AudioProvider, EventHandler {
 			}
 			return returnedSamples.length;
 		}else{
-			return 0;
+			return -1;
 		}
 	}
 	

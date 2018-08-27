@@ -97,13 +97,16 @@ public class WAVAudioChunk extends AudioChunk {
                 }
             }
 
+            if(ret == 0){
+                return -1;
+            }
             return ret;
         }catch (FileNotFoundException fnfe){
             fnfe.printStackTrace();
         }catch (IOException ioe){
             ioe.printStackTrace();
         }
-        return 0;
+        return -1;
     }
 
     @Override

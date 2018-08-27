@@ -85,7 +85,7 @@ public class Deck implements AudioProvider, EventHandler {
         for(int i = 0; i < returnedSamples.length; i++){
             returnedSamples[i] = 0;
         }
-        long length = 0;
+        long length = -1;
         float[] tmp = new float[returnedSamples.length];
         for(Channel c: data){
             long l = c.getSamples(startSampleIndex, tmp);

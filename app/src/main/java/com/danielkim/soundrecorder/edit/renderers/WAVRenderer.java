@@ -44,8 +44,8 @@ public class WAVRenderer implements Renderer {
                 asBytes.putShort(asSamples[i]);
             }
             stream.write(asBytes.array());
-            length += tmp;
-        }while (tmp > 0);
+            length += tmp >= 0? tmp: 0;
+        }while (tmp >= 0);
         stream.close();
 
         return file;

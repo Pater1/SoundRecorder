@@ -51,6 +51,9 @@ public class AudioChunkInMemory extends AudioChunk {
                 returnedSamples[i] = 0;
             }
         }
+        if(length == 0 && start == pcm.length){
+            return -1;
+        }
         return length;
     }
 }

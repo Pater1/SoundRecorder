@@ -31,8 +31,8 @@ public class SubChunk extends AudioChunk {
         if((ret+startSample)>endSample){
             ret -= getLength();
         }
-        if (ret < 0){
-            ret = 0;
+        if (ret < -1){
+            ret = -1;
         }
         return ret;
     }

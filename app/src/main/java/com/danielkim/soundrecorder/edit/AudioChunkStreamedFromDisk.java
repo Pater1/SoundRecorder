@@ -67,6 +67,6 @@ public class AudioChunkStreamedFromDisk extends AudioChunk  {
             returnedSamples[i] = orary[i];
         }
 
-        return ret >= 0? ret: 0; //readSampleData returns -1 on end, we return 0 on end
+        return ret;
     }
 }
