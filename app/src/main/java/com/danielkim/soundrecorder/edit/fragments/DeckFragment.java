@@ -3,8 +3,10 @@ package com.danielkim.soundrecorder.edit.fragments;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -62,12 +64,17 @@ public class DeckFragment extends Fragment {
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View v = inflater.inflate(R.layout.fragment_deck, container, false);
 		channelLinearLayout = (LinearLayout) v.findViewById(R.id.channelLinearLayout);
 		updateDeckView();
+		v.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				return false;
+			}
+		});
 		return v;
 	}
 	
@@ -162,6 +169,45 @@ public class DeckFragment extends Fragment {
 	public void setDeck(Deck d) {
 		deck = d;
 		updateDeckView();
+	}
+	
+	public ChannelCanvas trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
+		ChannelCanvas nextHost = null;
+		
+		if (e.getY() < 0 && curHostChannelCanvas.getChannelIndex() > 0) {
+			nextHost = (ChannelCanvas) channelLinearLayout.getChildAt(curHostChannelCanvas.getChannelIndex() - 1);
+		} else if (e.getY() > 0 && curHostChannelCanvas.getChannelIndex() < channelLinearLayout.getChildCount()) {
+			nextHost = (ChannelCanvas) channelLinearLayout.getChildAt(curHostChannelCanvas.getChannelIndex() + 1);
+		}
+		
+		if (nextHost != null) {
+			if (!nextHost.contains(chunk)) {
+				if (nextHost.addChunk(chunk)) {
+					curHostChannelCanvas.removeChunk(chunk);
+					curHostChannelCanvas.resize(curHostChannelCanvas.getWidth(), CHANNEL_HEIGHT);
+					nextHost.resize(nextHost.getWidth(), CHANNEL_HEIGHT);
+					
+					long downTime = SystemClock.uptimeMillis();
+					curHostChannelCanvas.onTouchEvent(
+							MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_UP, 0, 0, 0));
+
+					long nextDownTime = SystemClock.uptimeMillis() + 10;
+					nextHost.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
+							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
+//					DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) getActivity().findViewById(R.id.deckCursorCanvas);
+//					deckCursorCanvas.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
+//							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
+//					nextHost.dispatchTouchEvent(e);
+				}
+			}
+			
+			curHostChannelCanvas.invalidate();
+			nextHost.invalidate();
+			
+			return nextHost;
+		}
+		
+		return null;
 	}
 	
 	public boolean isDragging() {

@@ -73,15 +73,25 @@ public class ChannelCanvas extends View {
 	
 	private void assembleAudioChunkCanvases() {
 		for (int i = 0; i < channel.getDataSize(); i++) {
-			AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, channel.getChunk(i));
+			AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, channel.get(i));
 			chunkCanvasList.add(chunkCanvas);
 		}
 	}
 	
-	public void addChunk(AudioChunk chunk) {
+	public boolean addChunk(AudioChunk chunk) {
+		if (channel.getChunksForIndexes(chunk.getStartIndex(), chunk.getEndIndex()).size() >= 1) {
+			return false;
+		}
 		channel.add(chunk);
 		AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, chunk);
 		chunkCanvasList.add(chunkCanvas);
+		return true;
+	}
+	
+	public void removeChunk(AudioChunk chunk) {
+		channel.remove(chunk);
+		chunkCanvasList.clear();
+		assembleAudioChunkCanvases();
 	}
 	
 	@Override
@@ -141,8 +151,8 @@ public class ChannelCanvas extends View {
 				if (!deckFragment.isDragging()) {
 					endCursor = touchX;
 				} else {
+					AudioChunk chunkDragged = deckFragment.getChunkDragged();
 					if (touchY < getLayoutParams().height && touchY >= 0) {
-						AudioChunk chunkDragged = deckFragment.getChunkDragged();
 						if (chunkDragged.getStartIndex() > 0 || distanceDragged > 0) {
 							long indexSkipped = (long) (distanceDragged / GAP);
 							chunkDragged.setStartIndex(chunkDragged.getStartIndex() + indexSkipped);
@@ -152,6 +162,8 @@ public class ChannelCanvas extends View {
 							}
 							prevX = touchX;
 						}
+					} else {
+						deckFragment.trySwitchChannel(event, chunkDragged, this);
 					}
 				}
 				break;
@@ -182,22 +194,26 @@ public class ChannelCanvas extends View {
 		resize(totalWidth + 5, height);
 	}
 	
-	public void resizeWidth(int width) {
-		resize(width, getHeight());
-	}
-	
 	public void resize(int width, int height) {
 		if (!areCanvasesInit) {
 			resizeHeight(height);
 		}
 		LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
-		params.width = width;
+		params.width = Math.max(width, params.width);
 		params.height = height;
 		setLayoutParams(params);
 	}
 	
+	public int getChannelIndex() {
+		return channelIndex;
+	}
+	
 	public boolean isSingleCursor() {
 		return startCursor != null && endCursor != null && startCursor == endCursor;
+	}
+	
+	public boolean contains(AudioChunk chunk) {
+		return channel.contains(chunk);
 	}
 	
 	public boolean isCursorPresent() {
