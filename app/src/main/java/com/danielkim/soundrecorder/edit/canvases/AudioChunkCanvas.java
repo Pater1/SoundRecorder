@@ -88,10 +88,10 @@ public class AudioChunkCanvas extends View {
 		final float MIDDLE = mCanvas.getHeight() / 2;
 		mPath.reset();
 		
-		long length;
+		long length, start = startIndex;
 		float curX = 0;
 		do {
-			length = chunk.getSamples(startIndex, BUFFER);
+			length = chunk.getSamples(start, BUFFER);
 			for (int i = 0; i < length; i++) {
 				float curY = (BUFFER[i] * SCALE) + MIDDLE;
 				if (mPath.isEmpty()) {
@@ -101,9 +101,8 @@ public class AudioChunkCanvas extends View {
 				mPath.lineTo(curX, curY);
 				curX += GAP;
 			}
-			
-			// TODO: change condition to be length >= 0
-		} while (length == BUFFER.length);
+			start += length;
+		} while (length >= 0);
 	}
 	
 	public Bitmap getmBitmap() {
@@ -115,6 +114,9 @@ public class AudioChunkCanvas extends View {
 	}
 	
 	public int getCanvasWidth() {
+		if (mCanvas == null) {
+			return 0;
+		}
 		return mCanvas.getWidth();
 	}
 	
