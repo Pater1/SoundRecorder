@@ -72,7 +72,7 @@ public class EditFragment extends Fragment {
 	// gen test data
 	private AudioChunk genRandomAudioChunk() {
 		Random rand = new Random();
-		float[] memory = new float[rand.nextInt(200) +100];
+		float[] memory = new float[rand.nextInt(100) + 50];
 		for (int i = 0; i < memory.length; i++) {
 			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
 //			memory[i] = (float) Math.sin(i / 2.0);
