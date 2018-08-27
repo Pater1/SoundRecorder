@@ -28,6 +28,23 @@ public class Channel implements AudioProvider, EventHandler {
         data.remove(getChunkForIndex(sample));
     }
 
+	public AudioChunk get(int index) {
+		return data.get(index);
+	}
+	public AudioChunk get(long sample) { return getChunkForIndex(sample); }
+
+	@Override
+	public long getLength() {
+		long lastEnd = 0;
+		for(AudioChunk c: data){
+			long l = c.getEndIndex();
+			if(l > lastEnd){
+				lastEnd = l;
+			}
+		}
+		return lastEnd;
+	}
+
 	@Override
 	public float getSample(long sampleIndex) {
 		for(AudioChunk c: data){
@@ -60,16 +77,8 @@ public class Channel implements AudioProvider, EventHandler {
 			}
 			return returnedSamples.length;
 		}else{
-			return 0;
+			return -1;
 		}
-	}
-	
-	public AudioChunk getChunk(int index) {
-		if (index < 0 || index >= data.size()) {
-			throw new IllegalArgumentException("index out of bounds: " + index);
-		}
-		
-		return data.get(index);
 	}
 	
 	public int getDataSize() {
@@ -94,7 +103,6 @@ public class Channel implements AudioProvider, EventHandler {
 		}
 		return null;
 	}
-
 	public List<AudioChunk> getChunksForIndexes(long sampleIndexStart, long sampleIndexEnd){
 		List<AudioChunk> ret = new ArrayList<>();
 		for(AudioChunk c: data){
@@ -108,6 +116,21 @@ public class Channel implements AudioProvider, EventHandler {
 				return (int)(t0.getStartIndex() - t1.getStartIndex());
 			}
 		});
+		return ret;
+	}
+	public List<AudioChunk> getFlankingChunks(long sampleIndex){
+		List<AudioChunk> ret = new ArrayList<>();
+		ret.add(null);
+		ret.add(null);
+		for(AudioChunk c: data){
+			if(c.getEndIndex() < sampleIndex && (ret.get(0) == null || c.getEndIndex() > ret.get(0).getEndIndex())){
+				ret.set(0, c);
+			}
+
+			if(c.getStartIndex() > sampleIndex && (ret.get(1) == null || c.getStartIndex() < ret.get(1).getStartIndex())){
+				ret.set(1, c);
+			}
+		}
 		return ret;
 	}
 	@Override
