@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
@@ -26,14 +27,16 @@ import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
  */
 public class DeckFragment extends Fragment {
 	
-	private static final int MARGIN = 10;
-	private static final int CHANNEL_HEIGHT = 300;
+	public static final int MARGIN = 10;
+	public static final int CHANNEL_HEIGHT = 300;
 	
 	private Deck deck;
 	private LinearLayout channelLinearLayout;
 	private int cursorChannelIndex;
 	private int greatestChannelLength;
 	private OnFragmentInteractionListener mListener;
+	private AudioChunk chunkDragged;
+	private boolean isDragging;
 	
 	public DeckFragment() {
 		// Required empty public constructor
@@ -65,10 +68,6 @@ public class DeckFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_deck, container, false);
 		channelLinearLayout = (LinearLayout) v.findViewById(R.id.channelLinearLayout);
 		updateDeckView();
-//		DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) v.findViewById(R.id.deckCursorCanvas);
-//		Toast.makeText(getActivity(), channelLinearLayout.getLayoutParams().width + " lw", Toast.LENGTH_SHORT).show();
-//		Toast.makeText(getActivity(), channelLinearLayout.getLayoutParams().width + " w", Toast.LENGTH_SHORT).show();
-//		Toast.makeText(getActivity(), channelLinearLayout.getLayoutParams().height + " h", Toast.LENGTH_SHORT).show();
 		return v;
 	}
 	
@@ -163,6 +162,28 @@ public class DeckFragment extends Fragment {
 	public void setDeck(Deck d) {
 		deck = d;
 		updateDeckView();
+	}
+	
+	public boolean isDragging() {
+		return isDragging;
+	}
+	
+	public void startDragging(AudioChunk chunkDragged) {
+		this.chunkDragged = chunkDragged;
+		setIsDragging(true);
+	}
+	
+	public void stopDragging() {
+		this.chunkDragged = null;
+		setIsDragging(false);
+	}
+	
+	public AudioChunk getChunkDragged() {
+		return chunkDragged;
+	}
+	
+	private void setIsDragging(boolean isDragging) {
+		this.isDragging = isDragging;
 	}
 	
 	/**
