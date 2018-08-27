@@ -26,22 +26,34 @@
 
     <TableRow
         android:id="@+id/joysticksTableRow"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.2">
+        android:layout_width="wrap_content"
+        android:layout_height="153dp"
+        android:layout_weight="0.2"
+        android:gravity="bottom"
+        android:orientation="horizontal">
 
         <FrameLayout
             android:id="@+id/scrollingJoystickLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
+            <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
+                android:id="@+id/scrollingJoystick"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
         </FrameLayout>
 
         <FrameLayout
             android:id="@+id/controlsJoystickLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
+            <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
+                android:id="@+id/controlsJoystick"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
         </FrameLayout>
     </TableRow>
 </TableLayout>
