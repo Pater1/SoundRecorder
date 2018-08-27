@@ -11,4 +11,5 @@
     <color name="white">#FFFFFF</color>
     <color name="tab_strip">#B42929</color>
     <color name="cursor">#23D3E0</color>
+    <color name="deck_cursor">#73648A</color>
 </resources>

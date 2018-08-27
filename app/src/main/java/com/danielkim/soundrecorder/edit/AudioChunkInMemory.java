@@ -39,7 +39,7 @@ public class AudioChunkInMemory extends AudioChunk {
         int length = (int)(returnedSamples.length > lengthLeft? lengthLeft: returnedSamples.length);
 
         if(startSampleIndex >= pcm.length || (startSampleIndex + returnedSamples.length) < 0){
-            return 0;
+            return -1;
         }
 
         int start = (int)startSampleIndex;
@@ -50,6 +50,9 @@ public class AudioChunkInMemory extends AudioChunk {
             }else {
                 returnedSamples[i] = 0;
             }
+        }
+        if(length == 0 && start == pcm.length){
+            return -1;
         }
         return length;
     }

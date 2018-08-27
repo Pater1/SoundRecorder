@@ -31,6 +31,41 @@ public class RecordingService extends Service {
 
     private static final String LOG_TAG = "RecordingService";
 
+    public String getmFileName() {
+        return mFileName;
+    }
+    public void setmFileName(String mFileName) {
+        this.mFileName = mFileName;
+    }
+
+    public String getmFilePath() {
+        return mFilePath;
+    }
+    public void setmFilePath(String mFilePath) {
+        this.mFilePath = mFilePath;
+    }
+
+    public long getmStartingTimeMillis() {
+        return mStartingTimeMillis;
+    }
+    public void setmStartingTimeMillis(long mStartingTimeMillis) {
+        this.mStartingTimeMillis = mStartingTimeMillis;
+    }
+
+    public long getmElapsedMillis() {
+        return mElapsedMillis;
+    }
+    public void setmElapsedMillis(long mElapsedMillis) {
+        this.mElapsedMillis = mElapsedMillis;
+    }
+
+    public int getmElapsedSeconds() {
+        return mElapsedSeconds;
+    }
+    public void setmElapsedSeconds(int mElapsedSeconds) {
+        this.mElapsedSeconds = mElapsedSeconds;
+    }
+
     private String mFileName = null;
     private String mFilePath = null;
 

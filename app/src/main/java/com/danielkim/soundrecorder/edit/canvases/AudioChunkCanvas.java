@@ -7,15 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.os.OperationCanceledException;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
-
-import java.util.Random;
 
 /* In order for this view to work, it needs an AudioChunk to render, thus we have to create this
 programmatically.
@@ -25,12 +22,12 @@ public class AudioChunkCanvas extends View {
 	
 	public static final int GAP = 4;
 	public static final int SCALE = 100;
-	public static final int TOLERANCE = 20;
+	
+	private static final float[] BUFFER = new float[1000];
 	
 	private AudioChunk chunk;
 	private Path mPath;
-	private Paint chunkPaint, cursorPaint, borderPaint;
-	private Float startCursor, endCursor;
+	private Paint chunkPaint, borderPaint;
 	private Bitmap mBitmap;
 	private Canvas mCanvas;
 	
@@ -49,13 +46,6 @@ public class AudioChunkCanvas extends View {
 		chunkPaint.setStrokeJoin(Paint.Join.ROUND);
 		chunkPaint.setStrokeWidth(4f);
 		
-		cursorPaint = new Paint();
-		cursorPaint.setAntiAlias(true);
-		cursorPaint.setColor(getResources().getColor(R.color.cursor));
-		cursorPaint.setStyle(Paint.Style.FILL);
-		cursorPaint.setAlpha(150);
-		cursorPaint.setStrokeWidth(4f);
-		
 		borderPaint = new Paint();
 		borderPaint.setAntiAlias(true);
 		borderPaint.setColor(Color.BLACK);
@@ -72,12 +62,11 @@ public class AudioChunkCanvas extends View {
 			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 			mCanvas = new Canvas(mBitmap);
 			
-			genChunkPath((int) chunk.getStartIndex(), (int) chunk.getEndIndex());
-			setSingleCursor(w / (GAP * 2));
+			genChunkPath(0, (int) chunk.getLength());
 		}
 	}
 	
-	public void resize(int width, int height) {
+	public void resize(int height) {
 		onSizeChanged((int) (chunk.getLength() * GAP), height, getWidth(), getHeight());
 	}
 	
@@ -85,81 +74,35 @@ public class AudioChunkCanvas extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		
+		mCanvas.drawColor(Color.WHITE);
 		mCanvas.drawRect(0, 0, getCanvasWidth(), getCanvasHeight(), borderPaint);
 		mCanvas.drawPath(mPath, chunkPaint);
-		
-		if (isCursorPresent()) {
-			float end = Math.max(endCursor, startCursor + GAP);
-			end = Math.max(end, startCursor);
-			
-			float start = Math.min(startCursor, endCursor);
-			mCanvas.drawRect(start, 0, end, getHeight(), cursorPaint);
-		}
 	}
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		switch (event.getAction()) {
-			case MotionEvent.ACTION_DOWN:
-				setSingleCursor(event.getX());
-				moveSingleCursor(event.getX());
-				break;
-			
-			case MotionEvent.ACTION_MOVE:
-				endCursor = event.getX();
-				break;
-		}
-		invalidate();
-		
-		return true;
-	}
-	
-	public void moveSingleCursor(float newX) {
-		if (Math.abs(newX - getCursor()) <= TOLERANCE) {
-			startCursor = endCursor = newX;
-		}
-	}
-	
-	public boolean isSingleCursor() {
-		return startCursor != null && endCursor != null && startCursor == endCursor;
+		return super.onTouchEvent(event);
 	}
 	
 	public void genChunkPath(int startIndex, int endIndex) {
 		final float MIDDLE = mCanvas.getHeight() / 2;
 		mPath.reset();
 		
-		float prevX = startIndex, prevY = (chunk.getSample(endIndex) * SCALE) + MIDDLE;
-		endIndex = Math.min(endIndex, getCanvasWidth() / GAP);
-		mPath.moveTo(prevX, prevY);
-		
-		for (int i = startIndex; i <= endIndex; i++) {
-			float curX = GAP * i;
-			float curY = (chunk.getSample(i) * SCALE) + MIDDLE;
-			
-//			mPath.quadTo(prevX, prevY, curX, curY);
-			mPath.lineTo(curX, curY);
-			
-			prevX = curX;
-			prevY = curY;
-		}
-		
-		invalidate();
-	}
-	
-	public boolean isCursorPresent() {
-		return startCursor != null && endCursor != null;
-	}
-	
-	public void setSingleCursor(float cursor) {
-		startCursor = endCursor = cursor;
-	}
-	
-	public Float getCursor() {
-		if (!isSingleCursor()) {
-			throw new OperationCanceledException("there are 2 cursors present");
-		}
-		
-		return startCursor;
+		long length, start = startIndex;
+		float curX = 0;
+		do {
+			length = chunk.getSamples(start, BUFFER);
+			for (int i = 0; i < length; i++) {
+				float curY = (BUFFER[i] * SCALE) + MIDDLE;
+				if (mPath.isEmpty()) {
+					mPath.moveTo(curX, curY);
+				}
+				
+				mPath.lineTo(curX, curY);
+				curX += GAP;
+			}
+			start += length;
+		} while (length >= 0);
 	}
 	
 	public Bitmap getmBitmap() {
@@ -171,6 +114,9 @@ public class AudioChunkCanvas extends View {
 	}
 	
 	public int getCanvasWidth() {
+		if (mCanvas == null) {
+			return 0;
+		}
 		return mCanvas.getWidth();
 	}
 	

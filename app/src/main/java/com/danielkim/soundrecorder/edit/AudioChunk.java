@@ -8,7 +8,6 @@ import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 public abstract class AudioChunk implements AudioProvider, EventHandler {
 	protected long startIndex;
 
-	public abstract long getLength();
 	public long getEndIndex(){
 		return getStartIndex() + getLength();
 	}

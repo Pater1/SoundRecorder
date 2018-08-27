@@ -21,6 +21,10 @@ public class MergeEvent extends Event {
 
                 List<AudioChunk> toMerge = channel.getChunksForIndexes(getEffectStartSampleIndex(), getEffectStopSampleIndex());
 
+                if(toMerge.size() < 1){
+                    toMerge = channel.getFlankingChunks(getEffectStartSampleIndex());
+                }
+
                 if(toMerge.size() > 1){
                     AudioChunk rightMost = toMerge.get(0);
                     channel.remove(rightMost);

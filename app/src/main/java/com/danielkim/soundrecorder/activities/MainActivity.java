@@ -16,8 +16,6 @@ import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.danielkim.soundrecorder.R;
-import com.danielkim.soundrecorder.edit.fragments.AudioChunkFragment;
-import com.danielkim.soundrecorder.edit.fragments.ChannelFragment;
 import com.danielkim.soundrecorder.fragments.EditFragment;
 import com.danielkim.soundrecorder.fragments.FileViewerFragment;
 import com.danielkim.soundrecorder.fragments.RecordFragment;
