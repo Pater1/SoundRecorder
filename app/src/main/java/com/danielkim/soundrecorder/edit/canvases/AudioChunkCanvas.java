@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
@@ -100,6 +101,8 @@ public class AudioChunkCanvas extends View {
 				mPath.lineTo(curX, curY);
 				curX += GAP;
 			}
+			
+			// TODO: change condition to be length >= 0
 		} while (length == BUFFER.length);
 	}
 	
