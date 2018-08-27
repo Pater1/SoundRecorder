@@ -1,35 +1,47 @@
 package com.danielkim.soundrecorder.edit.canvases;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.OperationCanceledException;
+import android.support.v4.view.GestureDetectorCompat;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
+import com.danielkim.soundrecorder.edit.listeners.LongPressGestureListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas.GAP;
 
+@SuppressLint("ViewConstructor")
 public class ChannelCanvas extends View {
 	
 	public static final int TOLERANCE = 20;
+	private static final int DRAG_TOLERANCE = 5;
 	
 	private Channel channel;
 	private List<AudioChunkCanvas> chunkCanvasList;
 	private Float startCursor, endCursor;
-	private Paint cursorPaint;
+	private Paint cursorPaint, selectedPaint;
 	private int channelIndex;
 	private DeckFragment deckFragment;
 	private boolean areCanvasesInit;
+	private GestureDetector.SimpleOnGestureListener longPressListener;
+	private GestureDetectorCompat gestureDetector;
 	
 	Context context;
 	
@@ -41,6 +53,8 @@ public class ChannelCanvas extends View {
 		this.channelIndex = channelIndex;
 		this.deckFragment = deckFragment;
 		chunkCanvasList = new ArrayList<>();
+		longPressListener = new LongPressGestureListener(deckFragment, this);
+		gestureDetector = new GestureDetectorCompat(context, longPressListener);
 		
 		cursorPaint = new Paint();
 		cursorPaint.setAntiAlias(true);
@@ -48,6 +62,11 @@ public class ChannelCanvas extends View {
 		cursorPaint.setStyle(Paint.Style.FILL);
 		cursorPaint.setAlpha(150);
 		cursorPaint.setStrokeWidth(4f);
+		
+		selectedPaint = new Paint(cursorPaint);
+		selectedPaint.setStyle(Paint.Style.STROKE);
+		selectedPaint.setAlpha(255);
+		selectedPaint.setStrokeWidth(20f);
 		
 		assembleAudioChunkCanvases();
 	}
@@ -68,7 +87,7 @@ public class ChannelCanvas extends View {
 	@Override
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
-		canvas.drawColor(Color.GRAY);
+		canvas.drawColor(Color.LTGRAY);
 		
 		int spaceTaken = 0;
 		AudioChunk prevChunk = null;
@@ -90,6 +109,7 @@ public class ChannelCanvas extends View {
 		}
 		
 		if (isCursorPresent()) {
+			canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), selectedPaint);
 			float end = Math.max(endCursor, startCursor + GAP);
 			end = Math.max(end, startCursor);
 			
@@ -98,17 +118,46 @@ public class ChannelCanvas extends View {
 		}
 	}
 	
+	private float prevX;
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		super.onTouchEvent(event);
+		gestureDetector.onTouchEvent(event);
+		
+		float touchX = event.getX();
+		float touchY = event.getY();
+		float distanceDragged = touchX - prevX;
+		
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
-				setSingleCursor(event.getX());
-				moveSingleCursor(event.getX());
+				setSingleCursor(touchX);
+				moveSingleCursor(touchX);
 				deckFragment.updateCursor(channelIndex);
+				prevX = touchX;
 				break;
 			
 			case MotionEvent.ACTION_MOVE:
-				endCursor = event.getX();
+				if (!deckFragment.isDragging()) {
+					endCursor = touchX;
+				} else {
+					if (touchY < getLayoutParams().height && touchY >= 0) {
+						AudioChunk chunkDragged = deckFragment.getChunkDragged();
+						if (chunkDragged.getStartIndex() > 0 || distanceDragged > 0) {
+							long indexSkipped = (long) (distanceDragged / GAP);
+							chunkDragged.setStartIndex(chunkDragged.getStartIndex() + indexSkipped);
+							List<AudioChunk> chunksFound = channel.getChunksForIndexes(chunkDragged.getStartIndex() + 1, chunkDragged.getEndIndex() - 1);
+							if (chunksFound.size() > 1) {
+								chunkDragged.setStartIndex(chunkDragged.getStartIndex() - indexSkipped);
+							}
+							prevX = touchX;
+						}
+					}
+				}
+				break;
+			
+			case MotionEvent.ACTION_UP:
+				deckFragment.stopDragging();
 				break;
 		}
 		invalidate();
@@ -155,12 +204,40 @@ public class ChannelCanvas extends View {
 		return startCursor != null && endCursor != null;
 	}
 	
-	public void setSingleCursor(Float cursor) {
+	public void setSingleCursor(long index) {
+		startCursor = endCursor = (float) (index * GAP);
+	}
+	
+	private void setSingleCursor(Float cursor) {
 		startCursor = endCursor = cursor;
 	}
 	
 	public void disableCursor() {
 		setSingleCursor(null);
+	}
+	
+	public AudioChunk getNearestAudioChunk() {
+		if (!isCursorPresent()) {
+			throw new OperationCanceledException();
+		}
+		
+		long[] cursors = getCursor();
+		if (cursors.length != 1) {
+			setSingleCursor(cursors[0]);
+		}
+		return channel.getChunkForIndex(cursors[0]);
+	}
+	
+	public List<AudioChunk> getSelectedAudioChunks() {
+		long[] cursors = getCursor();
+		if (cursors == null) {
+			throw new OperationCanceledException("the cursor was not present in this channel");
+		}
+		if (cursors.length != 2) {
+			throw new OperationCanceledException("there was only 1 cursor found");
+		}
+		
+		return channel.getChunksForIndexes(cursors[0], cursors[1]);
 	}
 	
 	public long[] getCursor() {
