@@ -98,7 +98,7 @@ public class Channel implements AudioProvider, EventHandler {
 	public List<AudioChunk> getChunksForIndexes(long sampleIndexStart, long sampleIndexEnd){
 		List<AudioChunk> ret = new ArrayList<>();
 		for(AudioChunk c: data){
-			if(c.getEndIndex() > sampleIndexStart || c.getStartIndex() < sampleIndexEnd){
+			if(!(c.getEndIndex() < sampleIndexStart || c.getStartIndex() > sampleIndexEnd)){
 				ret.add(c);
 			}
 		}
