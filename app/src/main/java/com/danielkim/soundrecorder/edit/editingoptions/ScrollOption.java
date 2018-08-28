@@ -30,6 +30,19 @@ public class ScrollOption extends Option {
 	
 	@Override
 	protected boolean passedDownOnTouchMove(long[] cursorArray, int channelIndex) {
+		if(horizontalScrollView != null) {
+			if(direction.x == -1) {
+				horizontalScrollView.scrollBy(-(MAGNITUDE), 0);
+			} else if (direction.x == 1) {
+				horizontalScrollView.scrollBy(MAGNITUDE, 0);
+			}
+		} else if (verticalScrollView != null) {
+			if(direction.y == -1) {
+				verticalScrollView.scrollBy(0, -(MAGNITUDE));
+			} else if (direction.y == 1) {
+				verticalScrollView.scrollBy(0, MAGNITUDE);
+			}
+		}
 		return false;
 	}
 	
