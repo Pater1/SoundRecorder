@@ -11,37 +11,44 @@ import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.activities.MainActivity;
 import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 import com.danielkim.soundrecorder.fragments.EditFragment;
 
 public class StationaryHorizontalScrollView extends HorizontalScrollView {
-	
+
 	private int scrolledDistance;
 	private int scrolledLeft;
-	
+
 	public StationaryHorizontalScrollView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 //		return super.onTouchEvent(ev);
 		return false;
 	}
-	
+
 	@Override
 	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 		super.onScrollChanged(l, t, oldl, oldt);
-		
+
 		int horizontalScrollDistance = l - oldl;
-		
+
 		if (horizontalScrollDistance > 0) {
 			if (scrolledLeft <= 0) {
 				scrolledDistance += horizontalScrollDistance;
-				DeckFragment fragment = (DeckFragment) ((ActionBarActivity) getContext())
+				MainActivity activity = (MainActivity) getContext();
+				final DeckFragment fragment = (DeckFragment) activity
 						.getSupportFragmentManager().findFragmentByTag(EditFragment.DECK_FRAGMENT_TAG);
-				fragment.resize(fragment.getGreatestChannelLength() + scrolledDistance);
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						fragment.resize(fragment.getGreatestChannelLength() + scrolledDistance);
+					}
+				});
 			} else {
 				scrolledLeft -= horizontalScrollDistance;
 			}
@@ -49,7 +56,7 @@ public class StationaryHorizontalScrollView extends HorizontalScrollView {
 			scrolledLeft += Math.abs(horizontalScrollDistance);
 		}
 	}
-	
+
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
 //		return super.onInterceptTouchEvent(ev);

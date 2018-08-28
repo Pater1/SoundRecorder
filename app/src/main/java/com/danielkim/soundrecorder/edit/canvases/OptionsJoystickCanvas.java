@@ -48,11 +48,12 @@ public class OptionsJoystickCanvas extends View {
 		
 		optionPaint = new Paint(circlePaint);
 	}
-	
+
+	public Option liveOption;
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		Option optionSelected;
-		
+
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 				initialX = event.getX();
@@ -60,15 +61,34 @@ public class OptionsJoystickCanvas extends View {
 				optionSelected = getOptionSelected();
 				if (optionSelected != null) {
 					optionSelected.onTouchDown(deckFragment.getCursorPoints(), deckFragment.getCursorChannelIndex());
+					if(liveOption != null && liveOption != optionSelected){
+						liveOption.cancelTouch();
+					}
+					liveOption = optionSelected;
 				}
 				break;
 			case MotionEvent.ACTION_MOVE:
 				currentX = event.getX();
 				currentY = event.getY();
+				optionSelected = getOptionSelected();
+				if(liveOption != optionSelected){
+					if(liveOption != null) {
+						liveOption.cancelTouch();
+						liveOption = null;
+					}
+					if(optionSelected != null) {
+						optionSelected.onTouchDown(deckFragment.getCursorPoints(), deckFragment.getCursorChannelIndex());
+						liveOption = optionSelected;
+					}
+				}
 				break;
 			case MotionEvent.ACTION_UP:
 				//if move == up, down, left or right => do respective option
 				optionSelected = getOptionSelected();
+				if(liveOption != null && liveOption != optionSelected){
+					liveOption.cancelTouch();
+					liveOption = null;
+				}
 				if (optionSelected != null) {
 					optionSelected.onTouchUp(deckFragment.getCursorPoints(), deckFragment.getCursorChannelIndex());
 					deckFragment.refreshChannel(deckFragment.getCursorChannelIndex());
