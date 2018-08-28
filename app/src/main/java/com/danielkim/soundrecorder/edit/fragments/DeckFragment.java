@@ -3,13 +3,16 @@ package com.danielkim.soundrecorder.edit.fragments;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
@@ -18,6 +21,8 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
+
+import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -77,7 +82,7 @@ public class DeckFragment extends Fragment {
 		});
 		return v;
 	}
-	
+
 	private void updateDeckView() {
 		if (deck != null) {
 			channelLinearLayout.removeAllViews();
@@ -103,12 +108,6 @@ public class DeckFragment extends Fragment {
 	@Override
 	public void onAttach(Activity context) {
 		super.onAttach(context);
-//		if (context instanceof OnFragmentInteractionListener) {
-//			mListener = (OnFragmentInteractionListener) context;
-//		} else {
-//			throw new RuntimeException(context.toString()
-//					+ " must implement OnFragmentInteractionListener");
-//		}
 	}
 	
 	@Override
@@ -171,6 +170,14 @@ public class DeckFragment extends Fragment {
 		updateDeckView();
 	}
 	
+	public void renderAudio(String fileName) {
+		try {
+			deck.render(Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder", fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public ChannelCanvas trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
 		ChannelCanvas nextHost = null;
 		
@@ -194,10 +201,6 @@ public class DeckFragment extends Fragment {
 					long nextDownTime = SystemClock.uptimeMillis() + 10;
 					nextHost.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
 							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
-//					DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) getActivity().findViewById(R.id.deckCursorCanvas);
-//					deckCursorCanvas.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
-//							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
-//					nextHost.dispatchTouchEvent(e);
 				}
 			}
 			
@@ -208,6 +211,11 @@ public class DeckFragment extends Fragment {
 		}
 		
 		return null;
+	}
+	
+	public void refreshChannel(int channel) {
+		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
+		channelCanvas.regenChunks();
 	}
 	
 	public boolean isDragging() {
@@ -222,6 +230,14 @@ public class DeckFragment extends Fragment {
 	public void stopDragging() {
 		this.chunkDragged = null;
 		setIsDragging(false);
+	}
+
+	public HorizontalScrollView getHorizontalScrollView() {
+		return (HorizontalScrollView) getActivity().findViewById(R.id.channelHorizontalScrollView);
+	}
+
+	public ScrollView getVerticalScrollView() {
+		return (ScrollView) getActivity().findViewById(R.id.channelScrollView);
 	}
 	
 	public AudioChunk getChunkDragged() {

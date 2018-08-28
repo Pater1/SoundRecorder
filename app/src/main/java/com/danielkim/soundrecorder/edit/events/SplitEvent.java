@@ -1,5 +1,7 @@
 package com.danielkim.soundrecorder.edit.events;
 
+import android.util.Log;
+
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.SubChunk;
@@ -16,10 +18,17 @@ public class SplitEvent extends Event {
     public boolean applyEvent(EventHandler handler) {
         if(EffectTarget.isTargeted(this.getTargetFlags(), handler.getTargetedFlag())){
             if(handler instanceof AudioChunk){
+                
                 AudioChunk original = (AudioChunk)handler;
-                AudioChunk pre = new SubChunk(original, 0, getEffectStartSampleIndex());
-                AudioChunk post = new SubChunk(original, getEffectStartSampleIndex(), original.getLength());
+                
+                Log.d("cursor", getEffectStartSampleIndex() + "");
+                
+                AudioChunk pre = new SubChunk(original, 0, getEffectStartSampleIndex() - original.getStartIndex());
+                AudioChunk post = new SubChunk(original, getEffectStartSampleIndex() - original.getStartIndex(), original.getLength());
 
+                pre.setStartIndex(original.getStartIndex());
+                post.setStartIndex(getEffectStartSampleIndex());
+                
                 inChannel.remove(original);
                 inChannel.add(pre);
                 inChannel.add(post);

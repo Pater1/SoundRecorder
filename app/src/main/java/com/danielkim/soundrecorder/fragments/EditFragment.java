@@ -2,6 +2,8 @@ package com.danielkim.soundrecorder.fragments;
 
 import android.app.Activity;
 //import android.app.FragmentTransaction;
+import android.content.Context;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
@@ -19,6 +23,10 @@ import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
+import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
+import com.danielkim.soundrecorder.edit.editingoptions.RenderAudioOption;
+import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
+import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
@@ -35,7 +43,6 @@ import java.util.Random;
 public class EditFragment extends Fragment {
 	
 	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
-	public static final String DECK_CURSOR_FRAGMENT_TAG = "deck_cursor_fragment_tag";
 	
 	private OnFragmentInteractionListener mListener;
 	
@@ -66,10 +73,28 @@ public class EditFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
 		
 		// Add DeckFragment
-		DeckFragment deckFragment = DeckFragment.newInstance(genRandomDeck());
+		Deck d = genRandomDeck(getActivity());
+		DeckFragment deckFragment = DeckFragment.newInstance(d);
+//		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
+//		getChildFragmentManager().executePendingTransactions();
+		
+		OptionsJoystickCanvas controlsJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.controlsJoystick);
+		controlsJoystick.addOption(new SplitTrimOption());
+		controlsJoystick.addOption(new MergeOption());
+		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
+		controlsJoystick.setDeckFragment(deckFragment);
+		
+		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
+
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(1, 0)));
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, 1))); // switch in case of wrong direction
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(-1, 0)));
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, -1))); // switch in case of wrong direction
+		scrollJoystick.setDeckFragment(deckFragment);
 		return v;
 	}
 	
@@ -79,7 +104,6 @@ public class EditFragment extends Fragment {
 		float[] memory = new float[rand.nextInt(100) + 50];
 		for (int i = 0; i < memory.length; i++) {
 			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
-//			memory[i] = (float) Math.sin(i / 2.0);
 		}
 		return new AudioChunkInMemory(memory);
 	}
@@ -134,6 +158,7 @@ public class EditFragment extends Fragment {
 	public void resizeComponents() {
 		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
 
+//		DeckFragment deckFragment = (DeckFragment) getChildFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		deckFragment.resizeMax();
 	}
