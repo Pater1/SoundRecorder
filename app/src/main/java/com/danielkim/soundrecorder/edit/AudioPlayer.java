@@ -41,7 +41,7 @@ public class AudioPlayer {
 
                     tmp = provider.getSamples(playbackHead, audioBuffer);
 
-                    int r = audioTrack.write(audioBuffer, 0, (int)tmp, AudioTrack.WRITE_BLOCKING);
+                    int r = audioTrack.write(audioBuffer, 0, (int)(tmp >= 0? tmp: 0), AudioTrack.WRITE_BLOCKING);
 
                     playbackHead += r > tmp? tmp: r;
                 }while (tmp >= 0 && shouldContinue);

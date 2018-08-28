@@ -30,7 +30,7 @@ import static com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas.GAP;
 @SuppressLint("ViewConstructor")
 public class ChannelCanvas extends View {
 	
-	public static final int TOLERANCE = 20;
+	public static final int TOLERANCE = 50;
 	
 	private Channel channel;
 	private List<AudioChunkCanvas> chunkCanvasList;

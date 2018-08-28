@@ -213,7 +213,7 @@ public class PlaybackFragment extends DialogFragment{
             } else {
                 resumePlaying(); //resume the currently paused MediaPlayer
             }
-            audioPlayer.play();
+            //audioPlayer.play();
         } else {
             //pause the MediaPlayer
             pausePlaying();

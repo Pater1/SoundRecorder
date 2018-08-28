@@ -24,6 +24,7 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
 import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
+import com.danielkim.soundrecorder.edit.editingoptions.PlayOption;
 import com.danielkim.soundrecorder.edit.editingoptions.RenderAudioOption;
 import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
 import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
@@ -73,7 +74,7 @@ public class EditFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
 		
 		// Add DeckFragment
-		Deck d = genRandomDeck(getActivity());
+		Deck d = genRandomDeck(this.getActivity());
 		DeckFragment deckFragment = DeckFragment.newInstance(d);
 
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -84,6 +85,7 @@ public class EditFragment extends Fragment {
 		controlsJoystick.addOption(new SplitTrimOption());
 		controlsJoystick.addOption(new MergeOption());
 		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
+		controlsJoystick.addOption(new PlayOption(d, getActivity()));
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
@@ -98,44 +100,47 @@ public class EditFragment extends Fragment {
 	
 	// gen test data
 	
-//	private AudioChunk genRandomAudioChunk() {
-//		Random rand = new Random();
-//		float[] memory = new float[rand.nextInt(100) + 50];
-//		for (int i = 0; i < memory.length; i++) {
-//			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
-//		}
-//		return new AudioChunkInMemory(memory);
-//	}
-//
-//	private Channel genRandomChannel() {
-//		Channel c = new Channel();
-//		Random gen = new Random();
-//		long sampleLength = 0;
-//
-//		for (int i = 0; i < (gen.nextInt(6) + 3); i++) {
-//			AudioChunk chunk = genRandomAudioChunk();
-//			boolean shouldGenGap = gen.nextBoolean();
-//
-//			if (shouldGenGap) {
-//				int gap = gen.nextInt(100) + 50;
-//				chunk.setStartIndex(sampleLength + gap);
-//			} else {
-//				chunk.setStartIndex(sampleLength);
-//			}
-//			sampleLength = chunk.getEndIndex();
-//			c.add(chunk);
-//		}
-//
-//		return c;
-//	}
+	private AudioChunk genRandomAudioChunk() {
+		Random rand = new Random();
+		float[] memory = new float[rand.nextInt(100) + 50];
+		for (int i = 0; i < memory.length; i++) {
+			//memory[i] = (float)Math.sin((i/(double)44100) * 1440);
+			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
+		}
+		return new AudioChunkInMemory(memory);
+	}
+
+	private Channel genRandomChannel() {
+		Channel c = new Channel();
+		Random gen = new Random();
+		long sampleLength = 0;
+
+		for (int i = 0; i < (gen.nextInt(6) + 3); i++) {
+			AudioChunk chunk = genRandomAudioChunk();
+			boolean shouldGenGap = gen.nextBoolean();
+
+			if (shouldGenGap) {
+				int gap = gen.nextInt(100) + 50;
+				chunk.setStartIndex(sampleLength + gap);
+			} else {
+				chunk.setStartIndex(sampleLength);
+			}
+			sampleLength = chunk.getEndIndex();
+			c.add(chunk);
+		}
+
+		return c;
+	}
 	
 	private Deck genRandomDeck(Context c) {
 		Deck d = new Deck(c);
-//		Random gen = new Random();
-//
-//		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
-//			d.add(genRandomChannel());
-//		}
+		d.setSampleRate(44100);
+
+		Random gen = new Random();
+
+		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
+			d.add(genRandomChannel());
+		}
 		
 		Event.setPrimaryHandler(d);
 		

@@ -50,8 +50,8 @@ public class Deck implements AudioProvider, EventHandler {
         return lastEnd;
     }
 
-    public void render(String filePath, String fileName) throws IOException {
-        new WAVRenderer().render(fileName, android.os.Environment.getExternalStorageDirectory().getPath() + File.separator + "audio", this);
+    public String render(String filePath, String fileName) throws IOException {
+        String ret = new WAVRenderer().render(fileName, filePath, this);
 
         DBHelper db = new DBHelper(context);
         db.addRecording(fileName+".wav", filePath+File.separator+fileName+".wav",
@@ -59,6 +59,8 @@ public class Deck implements AudioProvider, EventHandler {
                         TimeHelper.sampleIndexToMicrosecond(this.getLength(), (int)this.getSampleRate())
                 )
         );
+
+        return ret;
     }
 
     @Override

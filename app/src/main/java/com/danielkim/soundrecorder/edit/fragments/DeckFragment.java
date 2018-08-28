@@ -22,6 +22,7 @@ import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -167,8 +168,8 @@ public class DeckFragment extends Fragment {
 	public void renderAudio(String fileName) {
 		try {
 			String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder";
-			deck.render(dir, fileName);
-			Toast.makeText(getActivity(), "File saved to " + dir + fileName, Toast.LENGTH_SHORT).show();
+			String file = deck.render(dir, fileName);
+			Toast.makeText(getActivity(), "File saved to " + file, Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

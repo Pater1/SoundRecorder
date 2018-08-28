@@ -135,6 +135,9 @@ public class Channel implements AudioProvider, EventHandler {
 				ret.set(1, c);
 			}
 		}
+		while (ret.contains(null)){
+			ret.remove(null);
+		}
 		return ret;
 	}
 	@Override
