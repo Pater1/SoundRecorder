@@ -21,6 +21,7 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
+import com.danielkim.soundrecorder.edit.editingoptions.Option;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,7 @@ public class DeckFragment extends Fragment {
 	
 	public DeckFragment() {
 		// Required empty public constructor
+		Option.setUpdateFragment(this);
 	}
 	
 	/**
@@ -100,7 +102,15 @@ public class DeckFragment extends Fragment {
 				channelCanvas.setLayoutParams(params);
 				curIndex++;
 			}
+
+			this.invalidate();
 		}
+	}
+
+
+	public void refresh() {
+		updateDeckView();
+		resizeMax();
 	}
 	
 	public void invalidate() {
@@ -118,14 +128,16 @@ public class DeckFragment extends Fragment {
 	public void updateCursor(int selectedChannelIndex) {
 		if (selectedChannelIndex != cursorChannelIndex) {
 			ChannelCanvas prevCursorChannel = ((ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex));
-			prevCursorChannel.disableCursor();
-			prevCursorChannel.invalidate();
+			if(prevCursorChannel != null) {
+				prevCursorChannel.disableCursor();
+				prevCursorChannel.invalidate();
+			}
 			cursorChannelIndex = selectedChannelIndex;
 		}
 	}
 	
 	public long[] getCursorPoints() {
-		if (channelLinearLayout.getChildCount() == 0) {
+		if (channelLinearLayout.getChildCount() == 0 || cursorChannelIndex >= channelLinearLayout.getChildCount()) {
 			return null;
 		}
 		

@@ -27,6 +27,7 @@ import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.WAVAudioChunk;
+import com.danielkim.soundrecorder.edit.editingoptions.Option;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 import com.danielkim.soundrecorder.fragments.EditFragment;
@@ -326,7 +327,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
             c.add(a);
             d.add(c);
             
-            ((DeckFragment)((MainActivity) mContext).getSupportFragmentManager().findFragmentByTag(EditFragment.DECK_FRAGMENT_TAG)).updateDeckView();
+            Option.getUpdateFragment().updateDeckView();
 
             Toast.makeText(this.mContext, "Added to Edit Deck.", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {

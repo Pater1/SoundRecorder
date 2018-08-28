@@ -14,7 +14,9 @@ public class RemoveOption extends Option {
         }
 
         Event event = new RemoveChunkEvent(cursorArray[0], channelIndex);
-        return event.handleEvent();
+        boolean b = event.handleEvent();
+        UPDATE_FRAGMENT.refresh();
+        return b;
     }
 
     @Override
