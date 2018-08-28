@@ -103,12 +103,6 @@ public class DeckFragment extends Fragment {
 	@Override
 	public void onAttach(Activity context) {
 		super.onAttach(context);
-//		if (context instanceof OnFragmentInteractionListener) {
-//			mListener = (OnFragmentInteractionListener) context;
-//		} else {
-//			throw new RuntimeException(context.toString()
-//					+ " must implement OnFragmentInteractionListener");
-//		}
 	}
 	
 	@Override
@@ -194,10 +188,6 @@ public class DeckFragment extends Fragment {
 					long nextDownTime = SystemClock.uptimeMillis() + 10;
 					nextHost.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
 							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
-//					DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) getActivity().findViewById(R.id.deckCursorCanvas);
-//					deckCursorCanvas.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
-//							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
-//					nextHost.dispatchTouchEvent(e);
 				}
 			}
 			
@@ -208,6 +198,11 @@ public class DeckFragment extends Fragment {
 		}
 		
 		return null;
+	}
+	
+	public void refreshChannel(int channel) {
+		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
+		channelCanvas.regenChunks();
 	}
 	
 	public boolean isDragging() {
