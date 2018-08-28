@@ -7,12 +7,14 @@
                                                              tools:context=".edit.fragments.DeckFragment">
 
     <com.danielkim.soundrecorder.edit.views.StationaryHorizontalScrollView
+        android:id="@+id/channelHorizontalScrollView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent">
 
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
+
             <LinearLayout
                 android:id="@+id/channelLinearLayout"
                 android:layout_width="wrap_content"
