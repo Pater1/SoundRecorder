@@ -25,6 +25,7 @@ import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
 import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
 import com.danielkim.soundrecorder.edit.editingoptions.PlayOption;
+import com.danielkim.soundrecorder.edit.editingoptions.RemoveOption;
 import com.danielkim.soundrecorder.edit.editingoptions.RenderAudioOption;
 import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
 import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
@@ -86,6 +87,7 @@ public class EditFragment extends Fragment {
 		controlsJoystick.addOption(new MergeOption());
 		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
 		controlsJoystick.addOption(new PlayOption(d, getActivity()));
+		controlsJoystick.addOption(new RemoveOption());
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
@@ -139,7 +141,7 @@ public class EditFragment extends Fragment {
 		Random gen = new Random();
 
 		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
-			d.add(genRandomChannel());
+			//d.add(genRandomChannel());
 		}
 		
 		Event.setPrimaryHandler(d);

@@ -13,6 +13,10 @@ import java.util.List;
 public class Channel implements AudioProvider, EventHandler {
 	private List<AudioChunk> data = new ArrayList<>();
 	private ChannelHeader header = new ChannelHeader();
+
+	public int chunkCount(){
+		return data.size();
+	}
 	
 	public void add(AudioChunk chunk) {
 		data.add(chunk);
