@@ -31,7 +31,6 @@ import static com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas.GAP;
 public class ChannelCanvas extends View {
 	
 	public static final int TOLERANCE = 20;
-	private static final int DRAG_TOLERANCE = 5;
 	
 	private Channel channel;
 	private List<AudioChunkCanvas> chunkCanvasList;
@@ -157,14 +156,17 @@ public class ChannelCanvas extends View {
 			case MotionEvent.ACTION_MOVE:
 				gestureDetector.onTouchEvent(event);
 				if (!deckFragment.isDragging()) {
-					endCursor = touchX;
+					if (Math.abs(prevX - touchX) >= TOLERANCE) {
+						endCursor = touchX;
+					}
 				} else {
 					AudioChunk chunkDragged = deckFragment.getChunkDragged();
 					if (touchY < getLayoutParams().height && touchY >= 0) {
 						if (chunkDragged.getStartIndex() > 0 || distanceDragged > 0) {
 							long indexSkipped = (long) (distanceDragged / GAP);
 							chunkDragged.setStartIndex(chunkDragged.getStartIndex() + indexSkipped);
-							List<AudioChunk> chunksFound = channel.getChunksForIndexes(chunkDragged.getStartIndex() + 1, chunkDragged.getEndIndex() - 1);
+							List<AudioChunk> chunksFound = channel.getChunksForIndexes(
+									chunkDragged.getStartIndex(), chunkDragged.getEndIndex());
 							if (chunksFound.size() > 1) {
 								chunkDragged.setStartIndex(chunkDragged.getStartIndex() - indexSkipped);
 							}
