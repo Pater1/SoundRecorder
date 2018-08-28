@@ -10,7 +10,7 @@
     <TableRow
         android:id="@+id/deckTableRow"
         android:layout_width="wrap_content"
-        android:layout_height="323dp"
+        android:layout_height="match_parent"
         android:layout_weight="0.8">
 
         <!--<com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas-->

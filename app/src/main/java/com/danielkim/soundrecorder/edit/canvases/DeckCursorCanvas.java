@@ -41,6 +41,7 @@ public class DeckCursorCanvas extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
+//		canvas.drawARGB(255, 0, 0, 0);
 		canvas.drawRect(cursor, 0, cursor + AudioChunkCanvas.GAP, canvas.getHeight(), cursorPaint);
 	}
 	

@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -23,7 +24,7 @@ public class AudioChunkCanvas extends View {
 	public static final int GAP = 4;
 	public static final int SCALE = 100;
 	
-	private static final float[] BUFFER = new float[1000];
+	private static final float[] BUFFER = new float[8192 / GAP];
 	
 	private AudioChunk chunk;
 	private Path mPath;
@@ -62,12 +63,13 @@ public class AudioChunkCanvas extends View {
 			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 			mCanvas = new Canvas(mBitmap);
 			
-			genChunkPath(0, (int) chunk.getLength());
+			genChunkPath(0, BUFFER.length);
+			invalidate();
 		}
 	}
 	
 	public void resize(int height) {
-		onSizeChanged((int) (chunk.getLength() * GAP), height, getWidth(), getHeight());
+		onSizeChanged(BUFFER.length * GAP, height, getWidth(), getHeight());
 	}
 	
 	@Override
@@ -90,10 +92,15 @@ public class AudioChunkCanvas extends View {
 		
 		long length, start = startIndex;
 		float curX = 0;
-		do {
+		long totalLength = 0;
+//		do {
 			length = chunk.getSamples(start, BUFFER);
 			for (int i = 0; i < length; i++) {
 				float curY = (BUFFER[i] * SCALE) + MIDDLE;
+//				Toast.makeText(context, BUFFER[i] + "", Toast.LENGTH_SHORT).show();
+//				Toast.makeText(context, curY + " y", Toast.LENGTH_SHORT).show();
+				Log.d("buffer", BUFFER[i] + "");
+				Log.d("y", curY + "");
 				if (mPath.isEmpty()) {
 					mPath.moveTo(curX, curY);
 				}
@@ -102,7 +109,7 @@ public class AudioChunkCanvas extends View {
 				curX += GAP;
 			}
 			start += length;
-		} while (length >= 0);
+//		} while (length >= 0);
 	}
 	
 	public Bitmap getmBitmap() {
