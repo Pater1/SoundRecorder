@@ -41,6 +41,7 @@ public class DeckFragment extends Fragment {
 	private int greatestChannelLength;
 	private AudioChunk chunkDragged;
 	private boolean isDragging;
+	private float horizontalDisplacement;
 	
 	public DeckFragment() {
 		// Required empty public constructor
@@ -99,6 +100,13 @@ public class DeckFragment extends Fragment {
 				channelCanvas.setLayoutParams(params);
 				curIndex++;
 			}
+		}
+	}
+	
+	public void invalidate() {
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+			channelCanvas.invalidate();
 		}
 	}
 	
@@ -176,7 +184,7 @@ public class DeckFragment extends Fragment {
 		}
 	}
 	
-	public ChannelCanvas trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
+	public void trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
 		ChannelCanvas nextHost = null;
 		
 		if (e.getY() < 0 && curHostChannelCanvas.getChannelIndex() > 0) {
@@ -204,11 +212,7 @@ public class DeckFragment extends Fragment {
 			
 			curHostChannelCanvas.invalidate();
 			nextHost.invalidate();
-			
-			return nextHost;
 		}
-		
-		return null;
 	}
 	
 	public void refreshChannel(int channel) {
@@ -230,6 +234,17 @@ public class DeckFragment extends Fragment {
 	public void stopDragging() {
 		this.chunkDragged = null;
 		setIsDragging(false);
+	}
+	
+	public void scrollHorizontally(int magnitude) {
+		HorizontalScrollView horizontalScrollView = getHorizontalScrollView();
+		horizontalScrollView.scrollBy(magnitude, 0);
+		horizontalDisplacement += magnitude;
+	}
+	
+	public void scrollVertically(int magnitude) {
+		ScrollView scrollView = getVerticalScrollView();
+		scrollView.scrollBy(0, magnitude);
 	}
 	
 	public HorizontalScrollView getHorizontalScrollView() {
