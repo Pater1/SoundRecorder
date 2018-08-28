@@ -2,6 +2,7 @@ package com.danielkim.soundrecorder.fragments;
 
 import android.app.Activity;
 //import android.app.FragmentTransaction;
+import android.content.Context;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,10 +72,14 @@ public class EditFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
 		
 		// Add DeckFragment
-		DeckFragment deckFragment = DeckFragment.newInstance(genRandomDeck());
+		Deck d = genRandomDeck(getActivity());
+		DeckFragment deckFragment = DeckFragment.newInstance(d);
+//		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
+//		getChildFragmentManager().executePendingTransactions();
 		
 		OptionsJoystickCanvas controlsJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.controlsJoystick);
 		controlsJoystick.addOption(new SplitTrimOption());
@@ -82,12 +87,11 @@ public class EditFragment extends Fragment {
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
-		HorizontalScrollView horizontalScrollView = (HorizontalScrollView) v.findViewById(R.id.channelHorizontalScrollView);
-		ScrollView verticalScrollView = (ScrollView) v.findViewById(R.id.channelScrollView);
-		scrollJoystick.addOption(new ScrollOption(horizontalScrollView, new Point(1, 0)));
-		scrollJoystick.addOption(new ScrollOption(verticalScrollView, new Point(0, 1))); // switch in case of wrong direction
-		scrollJoystick.addOption(new ScrollOption(horizontalScrollView, new Point(-1, 0)));
-		scrollJoystick.addOption(new ScrollOption(verticalScrollView, new Point(0, -1))); // switch in case of wrong direction
+
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(1, 0)));
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, 1))); // switch in case of wrong direction
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(-1, 0)));
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, -1))); // switch in case of wrong direction
 		scrollJoystick.setDeckFragment(deckFragment);
 		return v;
 	}
@@ -124,8 +128,8 @@ public class EditFragment extends Fragment {
 		return c;
 	}
 	
-	private Deck genRandomDeck() {
-		Deck d = new Deck();
+	private Deck genRandomDeck(Context c) {
+		Deck d = new Deck(c);
 		Random gen = new Random();
 		
 		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
@@ -152,6 +156,7 @@ public class EditFragment extends Fragment {
 	public void resizeComponents() {
 		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
 
+//		DeckFragment deckFragment = (DeckFragment) getChildFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		deckFragment.resizeMax();
 	}

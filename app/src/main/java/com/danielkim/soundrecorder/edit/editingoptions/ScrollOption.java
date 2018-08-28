@@ -2,24 +2,21 @@ package com.danielkim.soundrecorder.edit.editingoptions;
 
 import android.graphics.Color;
 import android.graphics.Point;
-import android.widget.HorizontalScrollView;
+import android.util.Log;
 import android.widget.ScrollView;
+import android.widget.Toast;
+
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public class ScrollOption extends Option {
 	
 	public static final int MAGNITUDE = 20;
-	
-	private ScrollView verticalScrollView;
-	private HorizontalScrollView horizontalScrollView;
+
+	private DeckFragment deckFragment;
 	private Point direction;
 	
-	public ScrollOption(ScrollView verticalScrollView, Point direction) {
-		this.verticalScrollView = verticalScrollView;
-		this.direction = direction;
-	}
-	
-	public ScrollOption(HorizontalScrollView horizontalScrollView, Point direction) {
-		this.horizontalScrollView = horizontalScrollView;
+	public ScrollOption(DeckFragment deckFragment, Point direction) {
+		this.deckFragment = deckFragment;
 		this.direction = direction;
 	}
 	
@@ -30,19 +27,17 @@ public class ScrollOption extends Option {
 	
 	@Override
 	protected boolean passedDownOnTouchMove(long[] cursorArray, int channelIndex) {
-		if(horizontalScrollView != null) {
-			if(direction.x == -1) {
-				horizontalScrollView.scrollBy(-(MAGNITUDE), 0);
-			} else if (direction.x == 1) {
-				horizontalScrollView.scrollBy(MAGNITUDE, 0);
-			}
-		} else if (verticalScrollView != null) {
-			if(direction.y == -1) {
-				verticalScrollView.scrollBy(0, -(MAGNITUDE));
-			} else if (direction.y == 1) {
-				verticalScrollView.scrollBy(0, MAGNITUDE);
-			}
+
+		if(direction.x == -1) {
+			deckFragment.getHorizontalScrollView().scrollBy(-(MAGNITUDE), 0);
+		} else if (direction.x == 1) {
+			deckFragment.getHorizontalScrollView().scrollBy(MAGNITUDE, 0);
+		} else if(direction.y == -1) {
+			deckFragment.getVerticalScrollView().scrollBy(0, -(MAGNITUDE));
+		} else if (direction.y == 1) {
+			deckFragment.getVerticalScrollView().scrollBy(0, MAGNITUDE);
 		}
+
 		return false;
 	}
 	

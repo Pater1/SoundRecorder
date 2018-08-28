@@ -9,7 +9,9 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
@@ -77,7 +79,7 @@ public class DeckFragment extends Fragment {
 		});
 		return v;
 	}
-	
+
 	private void updateDeckView() {
 		if (deck != null) {
 			channelLinearLayout.removeAllViews();
@@ -217,6 +219,14 @@ public class DeckFragment extends Fragment {
 	public void stopDragging() {
 		this.chunkDragged = null;
 		setIsDragging(false);
+	}
+
+	public HorizontalScrollView getHorizontalScrollView() {
+		return (HorizontalScrollView) getActivity().findViewById(R.id.channelHorizontalScrollView);
+	}
+
+	public ScrollView getVerticalScrollView() {
+		return (ScrollView) getActivity().findViewById(R.id.channelScrollView);
 	}
 	
 	public AudioChunk getChunkDragged() {

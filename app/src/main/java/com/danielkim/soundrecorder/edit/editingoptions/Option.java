@@ -13,38 +13,37 @@ public abstract class Option {
 	
 	private Thread onTouchMove;
 	private boolean isUpdating;
-	private long[] cursorArray;
-	private int channelIndex;
 	
-	public Option() {
+	public Option() {}
+	
+	public final boolean onTouchUp(long[] cursorArray, int channelIndex) {
+		cancelTouch();
+		return passedDownOnTouchUp(cursorArray, channelIndex);
+	}
+
+	public final void cancelTouch(){
+		this.isUpdating = false;
+		this.onTouchMove = null;
+	}
+	
+	public final boolean onTouchDown(final long[] cursorArray, final int channelIndex) {
 		this.onTouchMove = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (isUpdating) {
+				Thread thisThread;
+				do {
+					thisThread = Thread.currentThread();
 					passedDownOnTouchMove(cursorArray, channelIndex);
 					try {
-						Thread.sleep(100);
+						Thread.sleep(10);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}
+				}while (Option.this.isUpdating && thisThread == Option.this.onTouchMove);
 			}
 		});
-	}
-	
-	public final boolean onTouchUp(long[] cursorArray, int channelIndex) {
-		this.isUpdating = false;
-		onTouchMove.interrupt();
-		return passedDownOnTouchUp(cursorArray, channelIndex);
-	}
-	
-	public final boolean onTouchDown(long[] cursorArray, int channelIndex) {
-		this.channelIndex = channelIndex;
-		this.cursorArray = cursorArray;
 		this.isUpdating = true;
-		if (onTouchMove.isInterrupted()) {
-			this.onTouchMove.start();
-		}
+		this.onTouchMove.start();
 		return passedDownOnTouchDown(cursorArray, channelIndex);
 	}
 }
