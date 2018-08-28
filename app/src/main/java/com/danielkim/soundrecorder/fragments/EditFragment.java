@@ -160,9 +160,6 @@ public class EditFragment extends Fragment {
 	}
 	
 	public void resizeComponents() {
-		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
-
-//		DeckFragment deckFragment = (DeckFragment) getChildFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		deckFragment.resizeMax();
 	}

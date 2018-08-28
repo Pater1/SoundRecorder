@@ -146,10 +146,11 @@ public class DeckFragment extends Fragment {
 		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
 			ChannelCanvas canvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
 			height += CHANNEL_HEIGHT + (2 * MARGIN);
-			if (canvas.getLayoutParams().width < width) {
+			int layoutWidth = canvas.getLayoutParams().width;
+			if (layoutWidth < width) {
 				canvas.resize(width, CHANNEL_HEIGHT);
-				greatestChannelLength = Math.max(canvas.getLayoutParams().width, greatestChannelLength);
 			}
+			greatestChannelLength = Math.max(canvas.getLayoutParams().width, greatestChannelLength);
 		}
 		
 		DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) getActivity().findViewById(R.id.deckCursorCanvas);
