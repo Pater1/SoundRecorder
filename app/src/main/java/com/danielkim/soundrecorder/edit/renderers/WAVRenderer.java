@@ -11,10 +11,19 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 
 import be.tarsos.dsp.writer.WaveHeader;
 
 public class WAVRenderer implements Renderer {
+    private Long length;
+    public WAVRenderer(){
+        length = null;
+    };
+    public WAVRenderer(long preAllocatedLength){
+        length = preAllocatedLength;
+    }
+
     @Override
     public String extention(){
         return ".wav";
@@ -23,12 +32,17 @@ public class WAVRenderer implements Renderer {
     public String render(String fileName, String folderPath, AudioProvider audio) throws IOException {
         String file = FileHelper.setupFile(fileName, folderPath, extention());
 
+        if(length == null){
+            length = audio.getLength();
+        }
+
         WaveHeader h = new WaveHeader();
+        ByteArrayOutputStream s = new ByteArrayOutputStream(44);
         h.setBitsPerSample((short)16);
         h.setNumChannels((short)1);
         h.setSampleRate((int)audio.getSampleRate());
         h.setFormat(WaveHeader.FORMAT_PCM);
-        h.setNumBytes((int)audio.getLength() * 2);
+        h.setNumBytes((int)(long)length * 2);
 
         FileOutputStream stream = new FileOutputStream(file);
         h.write(stream);
@@ -46,6 +60,7 @@ public class WAVRenderer implements Renderer {
             stream.write(asBytes.array());
             length += tmp >= 0? tmp: 0;
         }while (tmp >= 0);
+
         stream.close();
 
         return file;

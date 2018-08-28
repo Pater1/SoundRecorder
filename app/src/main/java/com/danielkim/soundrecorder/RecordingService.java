@@ -6,19 +6,22 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.activities.MainActivity;
+import com.danielkim.soundrecorder.edit.AudioProvider;
+import com.danielkim.soundrecorder.edit.BufferedAudioProvider;
+import com.danielkim.soundrecorder.edit.helpers.TimeHelper;
+import com.danielkim.soundrecorder.edit.renderers.WAVRenderer;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Timer;
@@ -28,7 +31,7 @@ import java.util.TimerTask;
  * Created by Daniel on 12/28/2014.
  */
 public class RecordingService extends Service {
-
+    private static final int SAMPLE_RATE = 44100;
     private static final String LOG_TAG = "RecordingService";
 
     public String getmFileName() {
@@ -105,17 +108,41 @@ public class RecordingService extends Service {
 
     @Override
     public void onDestroy() {
-        if (mRecorder != null) {
+        //if (mRecorder != null) {
             stopRecording();
-        }
+        //}
 
         super.onDestroy();
     }
 
+    private AudioRecord record;
+    private boolean mShouldContinue;
+    private short[] buffer;
+    private int length = 0;
     public void startRecording() {
         setFileNameAndPath();
 
-        mRecorder = new MediaRecorder();
+        record = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    SAMPLE_RATE * 2);
+        record.startRecording();
+        buffer = new short[44100 * 60 * 30];
+        mShouldContinue = true;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                length = 0;
+                while (mShouldContinue){
+                    length += record.read(buffer, length, buffer.length-length);
+                }
+            }
+        }).start();
+
+        startTimer();
+
+        /*mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mRecorder.setOutputFile(mFilePath);
@@ -136,7 +163,7 @@ public class RecordingService extends Service {
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() failed");
-        }
+        }*/
     }
 
     public void setFileNameAndPath(){
@@ -147,7 +174,7 @@ public class RecordingService extends Service {
             count++;
 
             mFileName = getString(R.string.default_file_name)
-                    + "_" + (mDatabase.getCount() + count) + ".mp4";
+                    + "_" + (mDatabase.getCount() + count) + "";
             mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath();
             mFilePath += "/SoundRecorder/" + mFileName;
 
@@ -156,9 +183,11 @@ public class RecordingService extends Service {
     }
 
     public void stopRecording() {
-        mRecorder.stop();
-        mElapsedMillis = (System.currentTimeMillis() - mStartingTimeMillis);
-        mRecorder.release();
+        //mRecorder.stop();
+        //mElapsedMillis = (System.currentTimeMillis() - mStartingTimeMillis);
+        //mRecorder.release();
+        record.stop();
+        mShouldContinue = false;
         Toast.makeText(this, getString(R.string.toast_recording_finish) + " " + mFilePath, Toast.LENGTH_LONG).show();
 
         //remove notification
@@ -167,14 +196,22 @@ public class RecordingService extends Service {
             mIncrementTimerTask = null;
         }
 
-        mRecorder = null;
+        //mRecorder = null;
 
+        record.stop();
         try {
-            mDatabase.addRecording(mFileName, mFilePath, mElapsedMillis);
+            AudioProvider prov = new BufferedAudioProvider(buffer, 44100, length);
+            new WAVRenderer().render(mFileName, mFilePath, prov);
+            mDatabase.addRecording(mFileName+".wav", mFilePath,
+                    TimeHelper.microsecondToMillisecond(
+                        TimeHelper.sampleIndexToMicrosecond(prov.getLength(), (int)record.getSampleRate())
+                    )
+            );
 
         } catch (Exception e){
             Log.e(LOG_TAG, "exception", e);
         }
+        record.release();
     }
 
     private void startTimer() {
