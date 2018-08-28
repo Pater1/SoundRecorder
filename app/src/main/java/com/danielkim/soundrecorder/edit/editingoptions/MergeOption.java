@@ -9,6 +9,10 @@ public class MergeOption extends Option {
 
     @Override
     protected boolean passedDownOnTouchUp(long[] cursorArray, int channelIndex) {
+        if (cursorArray == null) {
+            return false;
+        }
+        
         Event event = null;
         if (cursorArray.length == 1) {
             event = new MergeEvent(cursorArray[0], cursorArray[0], channelIndex, true);

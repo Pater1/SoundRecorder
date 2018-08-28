@@ -112,7 +112,7 @@ public class OptionsJoystickCanvas extends View {
 			for (int i = 0; i < optionsList.size(); i++) {
 				Point point = getOptionPosition(i);
 				optionPaint.setColor(optionsList.get(i).getColor());
-				canvas.drawCircle((float) (initialX + point.x), (float) (initialY - point.y), OPTION_RADIUS, optionPaint);
+				canvas.drawCircle((float) (initialX + point.x), (float) (initialY + point.y), OPTION_RADIUS, optionPaint);
 				if (closestOptionIndex != null && closestOptionIndex == i) {
 					canvas.drawCircle(initialX, initialY, MAIN_RADIUS, optionPaint);
 				}
@@ -146,7 +146,7 @@ public class OptionsJoystickCanvas extends View {
 		double sin = Math.sin(angle);
 		double x = cos * OPTION_DISTANCE;
 		double y = sin * OPTION_DISTANCE;
-		return new Point(x, y);
+		return new Point(x, -y);
 	}
 	
 	private Option getOptionSelected() {

@@ -1,5 +1,7 @@
 package com.danielkim.soundrecorder.edit;
 
+import android.util.Log;
+
 import com.danielkim.soundrecorder.edit.events.Event;
 
 public class SubChunk extends AudioChunk {
@@ -26,10 +28,10 @@ public class SubChunk extends AudioChunk {
 
     @Override
     public long getSamples(long startSampleIndex, float[] returnedSamples) {
-        long localIndex = startSampleIndex - startSample;
+        long localIndex = startSampleIndex + startSample;
         long ret = superChunk.getSamples(localIndex, returnedSamples);
         if((ret+startSample)>endSample){
-            ret -= getLength();
+            ret -= (endSample - startSample);
         }
         if (ret < -1){
             ret = -1;

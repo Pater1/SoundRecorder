@@ -3,6 +3,7 @@ package com.danielkim.soundrecorder.edit.fragments;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,6 +21,8 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
+
+import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -165,6 +168,14 @@ public class DeckFragment extends Fragment {
 	public void setDeck(Deck d) {
 		deck = d;
 		updateDeckView();
+	}
+	
+	public void renderAudio(String fileName) {
+		try {
+			deck.render(Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder", fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public ChannelCanvas trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {

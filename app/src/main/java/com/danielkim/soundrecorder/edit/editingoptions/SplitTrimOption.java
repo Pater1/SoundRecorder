@@ -10,6 +10,10 @@ public class SplitTrimOption extends Option {
 
     @Override
     protected boolean passedDownOnTouchUp(long[] cursorArray, int channelIndex) {
+        if (cursorArray == null) {
+            return false;
+        }
+        
         Event event = null;
         if (cursorArray.length == 1) {
             event = new SplitEvent(cursorArray[0], channelIndex);
