@@ -90,8 +90,13 @@ public class ChannelCanvas extends View {
 	
 	public void removeChunk(AudioChunk chunk) {
 		channel.remove(chunk);
+		regenChunks();
+	}
+	
+	public void regenChunks() {
 		chunkCanvasList.clear();
 		assembleAudioChunkCanvases();
+		invalidate();
 	}
 	
 	@Override
@@ -133,7 +138,6 @@ public class ChannelCanvas extends View {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
-		gestureDetector.onTouchEvent(event);
 		
 		float touchX = event.getX();
 		float touchY = event.getY();
@@ -145,9 +149,13 @@ public class ChannelCanvas extends View {
 				moveSingleCursor(touchX);
 				deckFragment.updateCursor(channelIndex);
 				prevX = touchX;
+				if (getNearestAudioChunk() != null) {
+					gestureDetector.onTouchEvent(event);
+				}
 				break;
 			
 			case MotionEvent.ACTION_MOVE:
+				gestureDetector.onTouchEvent(event);
 				if (!deckFragment.isDragging()) {
 					endCursor = touchX;
 				} else {
@@ -169,6 +177,7 @@ public class ChannelCanvas extends View {
 				break;
 			
 			case MotionEvent.ACTION_UP:
+				gestureDetector.onTouchEvent(event);
 				deckFragment.stopDragging();
 				break;
 		}
