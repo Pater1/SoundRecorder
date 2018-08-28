@@ -1,5 +1,6 @@
 package com.danielkim.soundrecorder;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,7 +11,9 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,6 +25,7 @@ import com.danielkim.soundrecorder.edit.helpers.TimeHelper;
 import com.danielkim.soundrecorder.edit.renderers.WAVRenderer;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Timer;
@@ -117,7 +121,7 @@ public class RecordingService extends Service {
 
     private AudioRecord record;
     private boolean mShouldContinue;
-    private short[] buffer;
+    private static short[] buffer = new short[44100 * 60 * 30];
     private int length = 0;
     public void startRecording() {
         setFileNameAndPath();
@@ -128,7 +132,6 @@ public class RecordingService extends Service {
                     AudioFormat.ENCODING_PCM_16BIT,
                     SAMPLE_RATE * 2);
         record.startRecording();
-        buffer = new short[44100 * 60 * 30];
         mShouldContinue = true;
         new Thread(new Runnable() {
             @Override
@@ -140,7 +143,7 @@ public class RecordingService extends Service {
             }
         }).start();
 
-        startTimer();
+        //startTimer();
 
         /*mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -176,7 +179,7 @@ public class RecordingService extends Service {
             mFileName = getString(R.string.default_file_name)
                     + "_" + (mDatabase.getCount() + count) + "";
             mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mFilePath += "/SoundRecorder/" + mFileName;
+            mFilePath += "/SoundRecorder";
 
             f = new File(mFilePath);
         }while (f.exists() && !f.isDirectory());
@@ -188,23 +191,36 @@ public class RecordingService extends Service {
         //mRecorder.release();
         record.stop();
         mShouldContinue = false;
-        Toast.makeText(this, getString(R.string.toast_recording_finish) + " " + mFilePath, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, getString(R.string.toast_recording_finish) + " " + mFilePath, Toast.LENGTH_LONG).show();
 
         //remove notification
-        if (mIncrementTimerTask != null) {
+        /*if (mIncrementTimerTask != null) {
             mIncrementTimerTask.cancel();
             mIncrementTimerTask = null;
-        }
+        }*/
 
         //mRecorder = null;
-
-        record.stop();
         try {
-            AudioProvider prov = new BufferedAudioProvider(buffer, 44100, length);
-            new WAVRenderer().render(mFileName, mFilePath, prov);
-            mDatabase.addRecording(mFileName+".wav", mFilePath,
+            final AudioProvider prov = new BufferedAudioProvider(buffer, 44100, length);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        new WAVRenderer().render(mFileName, mFilePath, prov);
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(RecordingService.this, "File " + mFilePath+File.separator+mFileName+".wav Saved!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            mDatabase.addRecording(mFileName+".wav", mFilePath+File.separator+mFileName+".wav",
                     TimeHelper.microsecondToMillisecond(
-                        TimeHelper.sampleIndexToMicrosecond(prov.getLength(), (int)record.getSampleRate())
+                        TimeHelper.sampleIndexToMicrosecond(prov.getLength(), (int)prov.getSampleRate())
                     )
             );
 

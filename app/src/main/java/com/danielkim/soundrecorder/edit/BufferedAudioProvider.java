@@ -20,23 +20,23 @@ public class BufferedAudioProvider implements AudioProvider {
     @Override
     public long getSamples(long startSampleIndex, float[] returnedSamples) {
         int start = (int)startSampleIndex;
-        int length = buffer.length - start;
-        if(length > returnedSamples.length){
-            length = returnedSamples.length;
+        int i1 = (int)(length - start);
+        if(i1 > returnedSamples.length){
+            i1 = returnedSamples.length;
         }
 
-        if(length == 0 && returnedSamples.length > 0){
+        if(i1 == 0 && returnedSamples.length > 0){
             return -1;
         }
 
-        for(int i = 0; i < length; i++){
+        for(int i = 0; i < i1; i++){
             float s2 = (float)buffer[i+start] / Short.MAX_VALUE;
             if(s2 > 1){
                 s2 -= 2;
             }
             returnedSamples[i] = s2;
         }
-        return length;
+        return i1;
     }
 
     private long length;

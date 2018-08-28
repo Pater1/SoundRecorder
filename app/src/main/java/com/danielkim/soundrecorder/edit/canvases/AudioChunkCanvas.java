@@ -72,7 +72,7 @@ public class AudioChunkCanvas extends View {
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
+		super.onDraw(mCanvas);
 		
 		mCanvas.drawColor(Color.WHITE);
 		mCanvas.drawRect(0, 0, getCanvasWidth(), getCanvasHeight(), borderPaint);

@@ -105,7 +105,7 @@ public class ChannelCanvas extends View {
 			if (audioChunkCanvas.getCanvasWidth() <= 0) {
 				resizeHeight(getHeight());
 			}
-			audioChunkCanvas.draw(null);
+			audioChunkCanvas.draw(canvas);
 			Bitmap chunkBitmap = audioChunkCanvas.getmBitmap();
 			int gap;
 			if (prevChunk != null) {

@@ -22,10 +22,16 @@ import android.text.format.DateUtils;
 import com.danielkim.soundrecorder.DBHelper;
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.RecordingItem;
+import com.danielkim.soundrecorder.edit.AudioChunk;
+import com.danielkim.soundrecorder.edit.Channel;
+import com.danielkim.soundrecorder.edit.Deck;
+import com.danielkim.soundrecorder.edit.WAVAudioChunk;
+import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.fragments.PlaybackFragment;
 import com.danielkim.soundrecorder.listeners.OnDatabaseChangedListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
@@ -100,6 +106,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 entrys.add(mContext.getString(R.string.dialog_file_share));
                 entrys.add(mContext.getString(R.string.dialog_file_rename));
                 entrys.add(mContext.getString(R.string.dialog_file_delete));
+                entrys.add(mContext.getString(R.string.dialog_file_edit));
 
                 final CharSequence[] items = entrys.toArray(new CharSequence[entrys.size()]);
 
@@ -111,10 +118,12 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                     public void onClick(DialogInterface dialog, int item) {
                         if (item == 0) {
                             shareFileDialog(holder.getPosition());
-                        } if (item == 1) {
+                        } else if (item == 1) {
                             renameFileDialog(holder.getPosition());
                         } else if (item == 2) {
                             deleteFileDialog(holder.getPosition());
+                        } else if (item == 3) {
+                            editFileDialog(holder.getPosition());
                         }
                     }
                 });
@@ -304,5 +313,21 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
 
         AlertDialog alert = confirmDelete.create();
         alert.show();
+    }
+
+    public void editFileDialog (final int position) {
+        try {
+            Deck d = (Deck) Event.getPrimaryHandler();
+            Channel c = new Channel();
+            AudioChunk a = new WAVAudioChunk(new File(getItem(position).getFilePath()));
+            c.add(a);
+            d.add(c);
+
+            Toast.makeText(this.mContext, "Added to Edit Deck.", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this.mContext, "File is missing!", Toast.LENGTH_SHORT).show();
+            remove(position);
+            e.printStackTrace();
+        }
     }
 }
