@@ -68,8 +68,34 @@ public class WAVAudioChunk extends AudioChunk {
                 return ret;
         }
     }
+    float[] bufferedSamples = new float[44100 * 10];
+    long bufferStart = -1, bufferEnd = -1;
     @Override
-    public long getSamples(long startSampleIndex, float[] returnedSamples) {
+    public long getSamples(final long startSampleIndex, float[] returnedSamples) {
+        if(bufferStart > 0 && (startSampleIndex >= bufferStart && startSampleIndex < bufferStart + bufferedSamples.length)){
+            int start = (int)(startSampleIndex - bufferStart);
+            long length = bufferedSamples.length - start;
+            long bufferedLength = bufferEnd - bufferStart;
+            if(length > bufferedLength){
+                length = bufferedLength;
+            }
+            if(length > returnedSamples.length){
+                length = returnedSamples.length;
+            }
+            for(int i = 0; i < length; i++){
+                returnedSamples[i] = bufferedSamples[i + start];
+            }
+            return length;
+        }else {
+            final long r = rawGetSamples(startSampleIndex, returnedSamples);
+
+            bufferStart = startSampleIndex + r;
+            bufferEnd = rawGetSamples(bufferStart, bufferedSamples) + bufferStart;
+
+            return r;
+        }
+    }
+    private long rawGetSamples(long startSampleIndex, float[] returnedSamples) {
         try {
             if (startSampleIndex < lastSampleEnd) {
                 fileInputStream.close();
@@ -78,7 +104,7 @@ public class WAVAudioChunk extends AudioChunk {
                 lastSampleEnd = 0;
             }
             if(startSampleIndex > lastSampleEnd){
-                fileInputStream.skip(startSampleIndex);
+                fileInputStream.skip(startSampleIndex - lastSampleEnd);
                 lastSampleEnd = startSampleIndex;
             }
 
