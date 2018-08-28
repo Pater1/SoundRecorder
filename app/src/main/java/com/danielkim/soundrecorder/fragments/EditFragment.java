@@ -2,6 +2,7 @@ package com.danielkim.soundrecorder.fragments;
 
 import android.app.Activity;
 //import android.app.FragmentTransaction;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
@@ -19,6 +22,9 @@ import com.danielkim.soundrecorder.edit.AudioChunkInMemory;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
+import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
+import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
+import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
@@ -35,7 +41,6 @@ import java.util.Random;
 public class EditFragment extends Fragment {
 	
 	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
-	public static final String DECK_CURSOR_FRAGMENT_TAG = "deck_cursor_fragment_tag";
 	
 	private OnFragmentInteractionListener mListener;
 	
@@ -70,6 +75,20 @@ public class EditFragment extends Fragment {
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
+		
+		OptionsJoystickCanvas controlsJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.controlsJoystick);
+		controlsJoystick.addOption(new SplitTrimOption());
+		controlsJoystick.addOption(new MergeOption());
+		controlsJoystick.setDeckFragment(deckFragment);
+		
+		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
+		HorizontalScrollView horizontalScrollView = (HorizontalScrollView) v.findViewById(R.id.channelHorizontalScrollView);
+		ScrollView verticalScrollView = (ScrollView) v.findViewById(R.id.channelScrollView);
+		scrollJoystick.addOption(new ScrollOption(horizontalScrollView, new Point(1, 0)));
+		scrollJoystick.addOption(new ScrollOption(verticalScrollView, new Point(0, 1))); // switch in case of wrong direction
+		scrollJoystick.addOption(new ScrollOption(horizontalScrollView, new Point(-1, 0)));
+		scrollJoystick.addOption(new ScrollOption(verticalScrollView, new Point(0, -1))); // switch in case of wrong direction
+		scrollJoystick.setDeckFragment(deckFragment);
 		return v;
 	}
 	
@@ -79,7 +98,6 @@ public class EditFragment extends Fragment {
 		float[] memory = new float[rand.nextInt(100) + 50];
 		for (int i = 0; i < memory.length; i++) {
 			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
-//			memory[i] = (float) Math.sin(i / 2.0);
 		}
 		return new AudioChunkInMemory(memory);
 	}
