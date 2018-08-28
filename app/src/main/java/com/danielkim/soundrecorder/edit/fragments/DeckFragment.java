@@ -26,9 +26,6 @@ import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link DeckFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
  * Use the {@link DeckFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
@@ -41,7 +38,6 @@ public class DeckFragment extends Fragment {
 	private LinearLayout channelLinearLayout;
 	private int cursorChannelIndex;
 	private int greatestChannelLength;
-	private OnFragmentInteractionListener mListener;
 	private AudioChunk chunkDragged;
 	private boolean isDragging;
 	
@@ -82,8 +78,8 @@ public class DeckFragment extends Fragment {
 		});
 		return v;
 	}
-
-	private void updateDeckView() {
+	
+	public void updateDeckView() {
 		if (deck != null) {
 			channelLinearLayout.removeAllViews();
 			
@@ -110,12 +106,6 @@ public class DeckFragment extends Fragment {
 		super.onAttach(context);
 	}
 	
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-	
 	public void updateCursor(int selectedChannelIndex) {
 		if (selectedChannelIndex != cursorChannelIndex) {
 			ChannelCanvas prevCursorChannel = ((ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex));
@@ -126,6 +116,10 @@ public class DeckFragment extends Fragment {
 	}
 	
 	public long[] getCursorPoints() {
+		if (channelLinearLayout.getChildCount() == 0) {
+			return null;
+		}
+		
 		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex);
 		return channelCanvas.getCursor();
 	}
@@ -172,7 +166,9 @@ public class DeckFragment extends Fragment {
 	
 	public void renderAudio(String fileName) {
 		try {
-			deck.render(Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder", fileName);
+			String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder";
+			deck.render(dir, fileName);
+			Toast.makeText(getActivity(), "File saved to " + dir + fileName, Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -197,7 +193,7 @@ public class DeckFragment extends Fragment {
 					long downTime = SystemClock.uptimeMillis();
 					curHostChannelCanvas.onTouchEvent(
 							MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_UP, 0, 0, 0));
-
+					
 					long nextDownTime = SystemClock.uptimeMillis() + 10;
 					nextHost.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
 							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
@@ -214,8 +210,10 @@ public class DeckFragment extends Fragment {
 	}
 	
 	public void refreshChannel(int channel) {
-		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
-		channelCanvas.regenChunks();
+		if (channelLinearLayout.getChildCount() > channel) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
+			channelCanvas.regenChunks();
+		}
 	}
 	
 	public boolean isDragging() {
@@ -231,11 +229,11 @@ public class DeckFragment extends Fragment {
 		this.chunkDragged = null;
 		setIsDragging(false);
 	}
-
+	
 	public HorizontalScrollView getHorizontalScrollView() {
 		return (HorizontalScrollView) getActivity().findViewById(R.id.channelHorizontalScrollView);
 	}
-
+	
 	public ScrollView getVerticalScrollView() {
 		return (ScrollView) getActivity().findViewById(R.id.channelScrollView);
 	}
@@ -246,20 +244,5 @@ public class DeckFragment extends Fragment {
 	
 	private void setIsDragging(boolean isDragging) {
 		this.isDragging = isDragging;
-	}
-	
-	/**
-	 * This interface must be implemented by activities that contain this
-	 * fragment to allow an interaction in this fragment to be communicated
-	 * to the activity and potentially other fragments contained in that
-	 * activity.
-	 * <p>
-	 * See the Android Training lesson <a href=
-	 * "http://developer.android.com/training/basics/fragments/communicating.html"
-	 * >Communicating with Other Fragments</a> for more information.
-	 */
-	public interface OnFragmentInteractionListener {
-		// TODO: Update argument type and name
-		void onFragmentInteraction(Uri uri);
 	}
 }

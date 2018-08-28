@@ -4,12 +4,13 @@
              android:id="@+id/editTableLayout"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
+             android:gravity="bottom"
              tools:context=".fragments.EditFragment">
 
     <TableRow
         android:id="@+id/deckTableRow"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_height="323dp"
         android:layout_weight="0.8">
 
         <!--<com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas-->
@@ -35,25 +36,25 @@
         <FrameLayout
             android:id="@+id/scrollingJoystickLayout"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="250dp"
             android:layout_weight="1">
 
             <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
                 android:id="@+id/scrollingJoystick"
                 android:layout_width="match_parent"
-                android:layout_height="250dp" />
+                android:layout_height="250dp"/>
         </FrameLayout>
 
         <FrameLayout
             android:id="@+id/controlsJoystickLayout"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="250dp"
             android:layout_weight="1">
 
             <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
                 android:id="@+id/controlsJoystick"
                 android:layout_width="match_parent"
-                android:layout_height="250dp" />
+                android:layout_height="250dp"/>
         </FrameLayout>
     </TableRow>
 </TableLayout>

@@ -22,11 +22,14 @@ import android.text.format.DateUtils;
 import com.danielkim.soundrecorder.DBHelper;
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.RecordingItem;
+import com.danielkim.soundrecorder.activities.MainActivity;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.WAVAudioChunk;
 import com.danielkim.soundrecorder.edit.events.Event;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
+import com.danielkim.soundrecorder.fragments.EditFragment;
 import com.danielkim.soundrecorder.fragments.PlaybackFragment;
 import com.danielkim.soundrecorder.listeners.OnDatabaseChangedListener;
 
@@ -322,6 +325,8 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
             AudioChunk a = new WAVAudioChunk(new File(getItem(position).getFilePath()));
             c.add(a);
             d.add(c);
+            
+            ((DeckFragment)((MainActivity) mContext).getSupportFragmentManager().findFragmentByTag(EditFragment.DECK_FRAGMENT_TAG)).updateDeckView();
 
             Toast.makeText(this.mContext, "Added to Edit Deck.", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {

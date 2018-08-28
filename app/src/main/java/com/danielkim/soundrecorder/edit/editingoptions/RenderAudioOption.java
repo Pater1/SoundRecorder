@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
@@ -22,7 +23,7 @@ public class RenderAudioOption extends Option {
 	
 	@Override
 	protected boolean passedDownOnTouchUp(long[] cursorArray, int channelIndex) {
-		Context context = deckFragment.getActivity();
+		final Context context = deckFragment.getActivity();
 		
 		AlertDialog.Builder renameFileBuilder = new AlertDialog.Builder(context);
 		
@@ -37,7 +38,7 @@ public class RenderAudioOption extends Option {
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						try {
-							String value = input.getText().toString().trim() + ".wav";
+							String value = input.getText().toString().trim();
 							deckFragment.renderAudio(value);
 						} catch (Exception e) {
 //							Log.e(LOG_TAG, "exception", e);
