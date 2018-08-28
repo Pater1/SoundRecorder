@@ -1,19 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/editTableLayout"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context=".fragments.EditFragment">
 
     <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/deckTableRow"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="0.8">
 
+        <!--<com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas-->
+        <!--android:id="@+id/audioChunkCanvas"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"/>-->
+        <FrameLayout
+            android:id="@+id/deckLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
     </TableRow>
 
     <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="0.2"/>
+        android:id="@+id/joysticksTableRow"
+        android:layout_width="wrap_content"
+        android:layout_height="153dp"
+        android:layout_weight="0.2"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/scrollingJoystickLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
+                android:id="@+id/scrollingJoystick"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/controlsJoystickLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas
+                android:id="@+id/controlsJoystick"
+                android:layout_width="match_parent"
+                android:layout_height="250dp" />
+        </FrameLayout>
+    </TableRow>
 </TableLayout>

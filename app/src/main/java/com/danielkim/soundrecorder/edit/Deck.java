@@ -24,7 +24,7 @@ public class Deck implements AudioProvider, EventHandler {
     }
 
     public Channel getChannel(int index){
-        if(index < 0 || index > data.size()){
+        if(index < 0 || index >= data.size()){
             return null;
         }else{
             return data.get(index);
