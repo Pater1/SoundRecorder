@@ -23,7 +23,7 @@ public class SplitEventTest extends TestCase {
 
     @Test
     public void testSendSplit(){
-        Deck testDeck = new Deck();
+        Deck testDeck = new Deck(null);
 
         Channel testChannel = new Channel();
         AudioChunk testChunk = buildChunkInMemory(new float[512]);

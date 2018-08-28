@@ -107,12 +107,12 @@ public class EditFragment extends Fragment {
 	}
 	
 	private Deck genRandomDeck() {
-		Deck d = new Deck();
-		Random gen = new Random();
+		Deck d = new Deck(getActivity());
+		/*Random gen = new Random();
 		
 		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
 			d.add(genRandomChannel());
-		}
+		}*/
 		
 		Event.setPrimaryHandler(d);
 		

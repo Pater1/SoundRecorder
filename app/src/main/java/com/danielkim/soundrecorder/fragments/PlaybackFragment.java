@@ -1,5 +1,6 @@
 package com.danielkim.soundrecorder.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.ColorFilter;
@@ -18,8 +19,12 @@ import android.widget.TextView;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.RecordingItem;
+import com.danielkim.soundrecorder.edit.AudioPlayer;
+import com.danielkim.soundrecorder.edit.WAVAudioChunk;
+import com.danielkim.soundrecorder.edit.helpers.TimeHelper;
 import com.melnykov.fab.FloatingActionButton;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +41,7 @@ public class PlaybackFragment extends DialogFragment{
     private Handler mHandler = new Handler();
 
     private MediaPlayer mMediaPlayer = null;
+    private AudioPlayer audioPlayer;
 
     private SeekBar mSeekBar = null;
     private FloatingActionButton mPlayButton = null;
@@ -97,7 +103,10 @@ public class PlaybackFragment extends DialogFragment{
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(mMediaPlayer != null && fromUser) {
+                if(audioPlayer != null && fromUser){
+                    audioPlayer.setPlaybackHead(progress);
+                }
+                /*if(mMediaPlayer != null && fromUser) {
                     mMediaPlayer.seekTo(progress);
                     mHandler.removeCallbacks(mRunnable);
 
@@ -111,12 +120,12 @@ public class PlaybackFragment extends DialogFragment{
                 } else if (mMediaPlayer == null && fromUser) {
                     prepareMediaPlayerFromPoint(progress);
                     updateSeekBar();
-                }
+                }*/
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                if(mMediaPlayer != null) {
+                if(audioPlayer != null) {
                     // remove message Handler from updating progress bar
                     mHandler.removeCallbacks(mRunnable);
                 }
@@ -126,10 +135,12 @@ public class PlaybackFragment extends DialogFragment{
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if (mMediaPlayer != null) {
                     mHandler.removeCallbacks(mRunnable);
-                    mMediaPlayer.seekTo(seekBar.getProgress());
-
-                    long minutes = TimeUnit.MILLISECONDS.toMinutes(mMediaPlayer.getCurrentPosition());
-                    long seconds = TimeUnit.MILLISECONDS.toSeconds(mMediaPlayer.getCurrentPosition())
+                    long progress = seekBar.getProgress();
+                    audioPlayer.setPlaybackHead(progress);
+                    //mMediaPlayer.seekTo();
+                    long millis = TimeHelper.microsecondToMillisecond( TimeHelper.sampleIndexToMicrosecond(progress, audioPlayer.getSampleRate()));
+                    long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+                    long seconds = TimeUnit.MILLISECONDS.toSeconds(millis)
                             - TimeUnit.MINUTES.toSeconds(minutes);
                     mCurrentProgressTextView.setText(String.format("%02d:%02d", minutes,seconds));
                     updateSeekBar();
@@ -176,7 +187,10 @@ public class PlaybackFragment extends DialogFragment{
     public void onPause() {
         super.onPause();
 
-        if (mMediaPlayer != null) {
+        //if (mMediaPlayer != null) {
+        //    stopPlaying();
+        //}
+        if(audioPlayer != null){
             stopPlaying();
         }
     }
@@ -185,7 +199,7 @@ public class PlaybackFragment extends DialogFragment{
     public void onDestroy() {
         super.onDestroy();
 
-        if (mMediaPlayer != null) {
+        if (mMediaPlayer != null || audioPlayer != null) {
             stopPlaying();
         }
     }
@@ -194,21 +208,23 @@ public class PlaybackFragment extends DialogFragment{
     private void onPlay(boolean isPlaying){
         if (!isPlaying) {
             //currently MediaPlayer is not playing audio
-            if(mMediaPlayer == null) {
+            if(audioPlayer == null) {
                 startPlaying(); //start from beginning
             } else {
                 resumePlaying(); //resume the currently paused MediaPlayer
             }
-
+            audioPlayer.play();
         } else {
             //pause the MediaPlayer
             pausePlaying();
         }
     }
 
+    private Activity activity;
     private void startPlaying() {
+        activity = getActivity();
         mPlayButton.setImageResource(R.drawable.ic_media_pause);
-        mMediaPlayer = new MediaPlayer();
+        /*mMediaPlayer = new MediaPlayer();
 
         try {
             mMediaPlayer.setDataSource(item.getFilePath());
@@ -230,12 +246,33 @@ public class PlaybackFragment extends DialogFragment{
             public void onCompletion(MediaPlayer mp) {
                 stopPlaying();
             }
-        });
+        });*/
+
+        try {
+            audioPlayer = new AudioPlayer(new WAVAudioChunk(new File(item.getFilePath())));
+            mSeekBar.setMax(audioPlayer.getDuration());
+
+            audioPlayer.setListener(new AudioPlayer.AudioPlayerOnFinishedListener() {
+                @Override
+                public void onCompletion() {
+                    activity.runOnUiThread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    stopPlaying();
+                                }
+                            }
+                    );
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         updateSeekBar();
 
         //keep screen on while playing audio
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void prepareMediaPlayerFromPoint(int progress) {
@@ -267,41 +304,44 @@ public class PlaybackFragment extends DialogFragment{
     private void pausePlaying() {
         mPlayButton.setImageResource(R.drawable.ic_media_play);
         mHandler.removeCallbacks(mRunnable);
-        mMediaPlayer.pause();
+        //mMediaPlayer.pause();
+        audioPlayer.pause();
     }
 
     private void resumePlaying() {
         mPlayButton.setImageResource(R.drawable.ic_media_pause);
         mHandler.removeCallbacks(mRunnable);
-        mMediaPlayer.start();
+        //mMediaPlayer.start();
+        audioPlayer.play();
         updateSeekBar();
     }
 
     private void stopPlaying() {
         mPlayButton.setImageResource(R.drawable.ic_media_play);
         mHandler.removeCallbacks(mRunnable);
-        mMediaPlayer.stop();
-        mMediaPlayer.reset();
-        mMediaPlayer.release();
-        mMediaPlayer = null;
+        //mMediaPlayer.stop();
+        //mMediaPlayer.reset();
+        //mMediaPlayer.release();
+        //mMediaPlayer = null;
+
+        audioPlayer.stop();
 
         mSeekBar.setProgress(mSeekBar.getMax());
         isPlaying = !isPlaying;
 
-        mCurrentProgressTextView.setText(mFileLengthTextView.getText());
+        //mCurrentProgressTextView.setText(mFileLengthTextView.getText());
         mSeekBar.setProgress(mSeekBar.getMax());
 
         //allow the screen to turn off again once audio is finished playing
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     //updating mSeekBar
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-            if(mMediaPlayer != null){
-
-                int mCurrentPosition = mMediaPlayer.getCurrentPosition();
+            if(audioPlayer != null){
+                int mCurrentPosition = (int)TimeHelper.microsecondToMillisecond( TimeHelper.sampleIndexToMicrosecond( audioPlayer.getPlaybackHead(), audioPlayer.getSampleRate()));
                 mSeekBar.setProgress(mCurrentPosition);
 
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(mCurrentPosition);
