@@ -23,6 +23,7 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
 import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
+import com.danielkim.soundrecorder.edit.editingoptions.RenderAudioOption;
 import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
 import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
 import com.danielkim.soundrecorder.edit.events.Event;
@@ -79,6 +80,7 @@ public class EditFragment extends Fragment {
 		OptionsJoystickCanvas controlsJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.controlsJoystick);
 		controlsJoystick.addOption(new SplitTrimOption());
 		controlsJoystick.addOption(new MergeOption());
+		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
