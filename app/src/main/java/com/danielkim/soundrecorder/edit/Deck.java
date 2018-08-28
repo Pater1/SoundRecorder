@@ -1,5 +1,7 @@
 package com.danielkim.soundrecorder.edit;
 
+import android.content.Context;
+
 import com.danielkim.soundrecorder.DBHelper;
 import com.danielkim.soundrecorder.RecordingService;
 import com.danielkim.soundrecorder.edit.events.EffectTarget;
@@ -21,6 +23,11 @@ public class Deck implements AudioProvider, EventHandler {
     }
     public boolean remove(Channel c){
         return data.remove(c);
+    }
+
+    private Context context;
+    public Deck(Context context){
+        this.context = context;
     }
 
     public Channel getChannel(int index){
@@ -46,16 +53,12 @@ public class Deck implements AudioProvider, EventHandler {
     public void render(String filePath, String fileName) throws IOException {
         new WAVRenderer().render(fileName, android.os.Environment.getExternalStorageDirectory().getPath() + File.separator + "audio", this);
 
-        RecordingService rec = new RecordingService();
-        rec.setmStartingTimeMillis(System.currentTimeMillis());
-        rec.setmElapsedMillis(
+        DBHelper db = new DBHelper(context);
+        db.addRecording(fileName+".wav", filePath+File.separator+fileName+".wav",
                 TimeHelper.microsecondToMillisecond(
-                        TimeHelper.sampleIndexToMicrosecond(getLength(), (int)getSampleRate())
+                        TimeHelper.sampleIndexToMicrosecond(this.getLength(), (int)this.getSampleRate())
                 )
         );
-        rec.setmFileName(fileName + ".wav");
-        rec.setmFilePath(filePath + "\\" + fileName + ".wav");
-        rec.stopRecording();
     }
 
     @Override
