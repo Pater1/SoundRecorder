@@ -21,10 +21,10 @@ programmatically.
 @SuppressLint("ViewConstructor")
 public class AudioChunkCanvas extends View {
 	
-	public static final int GAP = 4;
+	public static int GAP = 4;
 	public static final int SCALE = 100;
 	
-	private static final float[] BUFFER = new float[8192 / GAP];
+	private float[] BUFFER = new float[512];
 	
 	private AudioChunk chunk;
 	private Path mPath;
@@ -33,6 +33,8 @@ public class AudioChunkCanvas extends View {
 	private Canvas mCanvas;
 	
 	private Context context;
+	private long sampleBegin;
+	private long sampleEnd;
 	
 	public AudioChunkCanvas(Context context, AudioChunk chunk) {
 		super(context);
@@ -59,17 +61,21 @@ public class AudioChunkCanvas extends View {
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
-		if (w != 0 && h != 0) {
+		if (w > 0 && h > 0) {
 			mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 			mCanvas = new Canvas(mBitmap);
 			
-			genChunkPath(0, BUFFER.length);
+			genChunkPath();
 			invalidate();
 		}
 	}
 	
 	public void resize(int height) {
-		onSizeChanged(BUFFER.length * GAP, height, getWidth(), getHeight());
+		onSizeChanged((int) ((sampleEnd - sampleBegin) * GAP), height, getWidth(), getHeight());
+	}
+	
+	public void resize(int width, int height) {
+		onSizeChanged(width, height, getWidth(), getHeight());
 	}
 	
 	@Override
@@ -86,30 +92,49 @@ public class AudioChunkCanvas extends View {
 		return super.onTouchEvent(event);
 	}
 	
-	public void genChunkPath(int startIndex, int endIndex) {
+	public void genChunkPath() {
+		// TODO make logic run on background thread
 		final float MIDDLE = mCanvas.getHeight() / 2;
-		mPath.reset();
 		
-		long length, start = startIndex;
-		float curX = 0;
-		long totalLength = 0;
-//		do {
-			length = chunk.getSamples(start, BUFFER);
-			for (int i = 0; i < length; i++) {
-				float curY = (BUFFER[i] * SCALE) + MIDDLE;
-//				Toast.makeText(context, BUFFER[i] + "", Toast.LENGTH_SHORT).show();
-//				Toast.makeText(context, curY + " y", Toast.LENGTH_SHORT).show();
-				Log.d("buffer", BUFFER[i] + "");
-				Log.d("y", curY + "");
-				if (mPath.isEmpty()) {
-					mPath.moveTo(curX, curY);
-				}
+//		Thread t = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+				mPath.reset();
+				Log.d("audio_chunk_render", "Start gen chunk path");
 				
-				mPath.lineTo(curX, curY);
-				curX += GAP;
-			}
-			start += length;
-//		} while (length >= 0);
+				long ptr = sampleBegin;
+				float curX = 0;
+				long length = 0, samplesRead;
+				long windowLength = (sampleEnd - sampleBegin);
+				do {
+					samplesRead = chunk.getSamples(ptr, BUFFER);
+					if (ptr + samplesRead > windowLength) {
+						samplesRead = windowLength - length;
+						if(samplesRead == 0){
+							samplesRead = -1;
+						}
+					}
+					
+					for (int i = 0; i < samplesRead; i++) {
+						float curY = (BUFFER[i] * SCALE) + MIDDLE;
+						if (mPath.isEmpty()) {
+							mPath.moveTo(curX, curY);
+						}
+						
+						mPath.lineTo(curX, curY);
+						curX += GAP;
+					}
+					ptr += samplesRead;
+					length += samplesRead;
+				} while (length < windowLength && samplesRead >= 0);
+				
+//				invalidate();
+//			}
+//		});
+		
+//		t.run();
+//		while (t.isAlive()) {}
+		Log.d("audio_chunk_render", "Done rendering audiochunk");
 	}
 	
 	public Bitmap getmBitmap() {
@@ -129,5 +154,21 @@ public class AudioChunkCanvas extends View {
 	
 	public int getCanvasHeight() {
 		return mCanvas.getHeight();
+	}
+	
+	public void setSampleBegin(long sampleBegin) {
+		this.sampleBegin = sampleBegin;
+	}
+	
+	public void setSampleEnd(long sampleEnd) {
+		this.sampleEnd = sampleEnd;
+		if (sampleEnd == 0) {
+			Log.d("begin_audiochunkcanvas", sampleBegin + "");
+			Log.d("end_audiochunkcanvas", sampleEnd + "");
+		}
+	}
+	
+	public Canvas getmCanvas() {
+		return mCanvas;
 	}
 }

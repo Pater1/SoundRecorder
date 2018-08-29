@@ -27,15 +27,10 @@ public class ScrollOption extends Option {
 	
 	@Override
 	protected boolean passedDownOnTouchMove(long[] cursorArray, int channelIndex) {
-
-		if(direction.x == -1) {
-			deckFragment.getHorizontalScrollView().scrollBy(-(MAGNITUDE), 0);
-		} else if (direction.x == 1) {
-			deckFragment.getHorizontalScrollView().scrollBy(MAGNITUDE, 0);
-		} else if(direction.y == -1) {
-			deckFragment.getVerticalScrollView().scrollBy(0, -(MAGNITUDE));
-		} else if (direction.y == 1) {
-			deckFragment.getVerticalScrollView().scrollBy(0, MAGNITUDE);
+		if (direction.x != 0) {
+			deckFragment.scrollHorizontally(direction.x * MAGNITUDE);
+		} else if (direction.y != 0) {
+			deckFragment.scrollVertically(direction.y * MAGNITUDE);
 		}
 
 		return false;

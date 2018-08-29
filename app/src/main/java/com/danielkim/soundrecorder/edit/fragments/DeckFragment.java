@@ -1,11 +1,14 @@
 package com.danielkim.soundrecorder.edit.fragments;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,9 +22,12 @@ import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
+import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
 import com.danielkim.soundrecorder.edit.editingoptions.Option;
+import com.danielkim.soundrecorder.edit.events.Event;
+import com.danielkim.soundrecorder.edit.events.MoveEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -87,11 +93,26 @@ public class DeckFragment extends Fragment {
 		if (deck != null) {
 			channelLinearLayout.removeAllViews();
 			
+			Display display = getActivity().getWindowManager().getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			
+			int sampleBegin = (int) (horizontalDisplacement / AudioChunkCanvas.GAP);
+			int sampleEnd = sampleBegin + (size.x / AudioChunkCanvas.GAP);
+			
+			if (sampleEnd == 0) {
+				Log.d("end_deckfrag", sampleEnd + "");
+				Log.d("begin_deckfrag", sampleBegin + "");
+			}
+			
 			int curIndex = 0;
 			Channel curChannel;
-			
 			while ((curChannel = deck.getChannel(curIndex)) != null) {
 				ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel, curIndex, this);
+				
+				channelCanvas.setSampleBegin(sampleBegin);
+				channelCanvas.setSampleEnd(sampleEnd);
+				
 				channelLinearLayout.addView(channelCanvas);
 				
 				LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) channelCanvas.getLayoutParams();
@@ -102,12 +123,12 @@ public class DeckFragment extends Fragment {
 				channelCanvas.setLayoutParams(params);
 				curIndex++;
 			}
-
+			
 			this.invalidate();
 		}
 	}
-
-
+	
+	
 	public void refresh() {
 		updateDeckView();
 		resizeMax();
@@ -128,7 +149,7 @@ public class DeckFragment extends Fragment {
 	public void updateCursor(int selectedChannelIndex) {
 		if (selectedChannelIndex != cursorChannelIndex) {
 			ChannelCanvas prevCursorChannel = ((ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex));
-			if(prevCursorChannel != null) {
+			if (prevCursorChannel != null) {
 				prevCursorChannel.disableCursor();
 				prevCursorChannel.invalidate();
 			}
@@ -207,10 +228,12 @@ public class DeckFragment extends Fragment {
 		
 		if (nextHost != null) {
 			if (!nextHost.contains(chunk)) {
-				if (nextHost.addChunk(chunk)) {
-					curHostChannelCanvas.removeChunk(chunk);
-					curHostChannelCanvas.resize(curHostChannelCanvas.getWidth(), CHANNEL_HEIGHT);
-					nextHost.resize(nextHost.getWidth(), CHANNEL_HEIGHT);
+				Event moveEvent = new MoveEvent(chunk.getStartIndex(), chunk.getEndIndex(),
+						curHostChannelCanvas.getChannelIndex(), nextHost.getChannelIndex());
+				if (moveEvent.handleEvent()) {
+//					curHostChannelCanvas.removeChunk(chunk);
+//					curHostChannelCanvas.resize(curHostChannelCanvas.getWidth(), CHANNEL_HEIGHT);
+//					nextHost.resize(nextHost.getWidth(), CHANNEL_HEIGHT);
 					
 					long downTime = SystemClock.uptimeMillis();
 					curHostChannelCanvas.onTouchEvent(
@@ -252,6 +275,33 @@ public class DeckFragment extends Fragment {
 		HorizontalScrollView horizontalScrollView = getHorizontalScrollView();
 		horizontalScrollView.scrollBy(magnitude, 0);
 		horizontalDisplacement += magnitude;
+		if (horizontalDisplacement < 0) {
+			horizontalDisplacement = 0;
+		}
+//		Log.d("scroll");
+		updateScroll();
+		getActivity().runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				//refresh();
+			}
+		});
+	}
+
+	public void updateScroll() {
+		Display display = getActivity().getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+
+		int sampleBegin = (int) (horizontalDisplacement / AudioChunkCanvas.GAP);
+		int sampleEnd = sampleBegin + (size.x / AudioChunkCanvas.GAP);
+
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+			channelCanvas.setSampleBegin(sampleBegin);
+			channelCanvas.setSampleEnd(sampleEnd);
+			channelCanvas.invalidate();
+		}
 	}
 	
 	public void scrollVertically(int magnitude) {

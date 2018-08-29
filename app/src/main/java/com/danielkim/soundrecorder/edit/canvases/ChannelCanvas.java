@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.OperationCanceledException;
 import android.support.v4.view.GestureDetectorCompat;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,6 +42,7 @@ public class ChannelCanvas extends View {
 	private boolean areCanvasesInit;
 	private GestureDetector.SimpleOnGestureListener longPressListener;
 	private GestureDetectorCompat gestureDetector;
+	private long sampleBegin, sampleEnd;
 	
 	Context context;
 	
@@ -73,7 +75,7 @@ public class ChannelCanvas extends View {
 	private void assembleAudioChunkCanvases() {
 		for (int i = 0; i < channel.getDataSize(); i++) {
 			AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, channel.get(i));
-			chunkCanvasList.add(chunkCanvas);
+			//chunkCanvasList.add(chunkCanvas);
 		}
 	}
 	
@@ -83,7 +85,7 @@ public class ChannelCanvas extends View {
 		}
 		channel.add(chunk);
 		AudioChunkCanvas chunkCanvas = new AudioChunkCanvas(context, chunk);
-		chunkCanvasList.add(chunkCanvas);
+		//chunkCanvasList.add(chunkCanvas);
 		return true;
 	}
 	
@@ -102,24 +104,32 @@ public class ChannelCanvas extends View {
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
 		canvas.drawColor(Color.LTGRAY);
+		chunkCanvasList.clear();
 		
-		int spaceTaken = 0;
-		AudioChunk prevChunk = null;
-		for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
-			if (audioChunkCanvas.getCanvasWidth() <= 0) {
-				resizeHeight(getHeight());
+		long lastEnd = 0;
+		for (int i = 0; i < channel.getDataSize(); i++) {
+			if (channel.get(i).getEndIndex() > lastEnd) {
+				lastEnd = channel.get(i).getEndIndex();
+				AudioChunk audioChunk = channel.get(i);
+				AudioChunkCanvas audioChunkCanvas = new AudioChunkCanvas(context, audioChunk);
+				chunkCanvasList.add(audioChunkCanvas);
+				
+				long end = Math.min(sampleEnd, audioChunkCanvas.getChunk().getEndIndex());
+				long begin = Math.max(sampleBegin, audioChunkCanvas.getChunk().getStartIndex());
+				audioChunkCanvas.setSampleBegin(begin);
+				audioChunkCanvas.setSampleEnd(end);
+				audioChunkCanvas.resize((int) (AudioChunkCanvas.GAP * (end - begin)), DeckFragment.CHANNEL_HEIGHT);
 			}
+		}
+		resize((int) (lastEnd * GAP), DeckFragment.CHANNEL_HEIGHT);
+		for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
+			if (audioChunkCanvas.getChunk().getEndIndex() < sampleBegin || audioChunkCanvas.getChunk().getStartIndex() > sampleEnd) {
+				continue;
+			}
+			
 			audioChunkCanvas.draw(canvas);
 			Bitmap chunkBitmap = audioChunkCanvas.getmBitmap();
-			int gap;
-			if (prevChunk != null) {
-				gap = (int) ((audioChunkCanvas.getChunk().getStartIndex() - prevChunk.getEndIndex()) * GAP);
-			} else {
-				gap = (int) ((audioChunkCanvas.getChunk().getStartIndex()) * GAP);
-			}
-			canvas.drawBitmap(chunkBitmap, spaceTaken + gap, 0, null);
-			spaceTaken += (audioChunkCanvas.getCanvasWidth() + gap);
-			prevChunk = audioChunkCanvas.getChunk();
+			canvas.drawBitmap(chunkBitmap, Math.max(audioChunkCanvas.getChunk().getStartIndex(), sampleBegin)* GAP, 0, null);
 		}
 		
 		if (isCursorPresent()) {
@@ -130,6 +140,8 @@ public class ChannelCanvas extends View {
 			float start = Math.min(startCursor, endCursor);
 			canvas.drawRect(start, 0, end, getHeight(), cursorPaint);
 		}
+		
+		invalidate();
 	}
 	
 	private float prevX;
@@ -171,6 +183,18 @@ public class ChannelCanvas extends View {
 								chunkDragged.setStartIndex(chunkDragged.getStartIndex() - indexSkipped);
 							}
 							prevX = touchX;
+							
+							for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
+								if (audioChunkCanvas.getChunk() == chunkDragged) {
+									long end = Math.min(sampleEnd, audioChunkCanvas.getChunk().getEndIndex());
+									long begin = Math.max(sampleBegin, audioChunkCanvas.getChunk().getStartIndex());
+									audioChunkCanvas.setSampleBegin(begin);
+									audioChunkCanvas.setSampleEnd(end);
+									audioChunkCanvas.resize((int) (AudioChunkCanvas.GAP * (end - begin)), DeckFragment.CHANNEL_HEIGHT);
+									audioChunkCanvas.draw(audioChunkCanvas.getmCanvas());
+									break;
+								}
+							}
 						}
 					} else {
 						deckFragment.trySwitchChannel(event, chunkDragged, this);
@@ -279,5 +303,29 @@ public class ChannelCanvas extends View {
 		}
 		
 		return null;
+	}
+	
+	public void setSampleBegin(long sampleBegin) {
+		this.sampleBegin = sampleBegin;
+		for (int i = 0; i < chunkCanvasList.size(); i++) {
+			AudioChunkCanvas audioChunkCanvas = chunkCanvasList.get(i);
+			long end = Math.min(sampleEnd, audioChunkCanvas.getChunk().getEndIndex());
+			long begin = Math.max(sampleBegin, audioChunkCanvas.getChunk().getStartIndex());
+			audioChunkCanvas.setSampleBegin(begin);
+			audioChunkCanvas.setSampleEnd(end);
+			audioChunkCanvas.resize((int) (AudioChunkCanvas.GAP * (end - begin)), DeckFragment.CHANNEL_HEIGHT);
+		}
+	}
+	
+	public void setSampleEnd(long sampleEnd) {
+		this.sampleEnd = sampleEnd;
+		for (int i = 0; i < chunkCanvasList.size(); i++) {
+			AudioChunkCanvas audioChunkCanvas = chunkCanvasList.get(i);
+			long end = Math.min(sampleEnd, audioChunkCanvas.getChunk().getEndIndex());
+			long begin = Math.max(sampleBegin, audioChunkCanvas.getChunk().getStartIndex());
+			audioChunkCanvas.setSampleBegin(begin);
+			audioChunkCanvas.setSampleEnd(end);
+			audioChunkCanvas.resize((int) (AudioChunkCanvas.GAP * (end - begin)), DeckFragment.CHANNEL_HEIGHT);
+		}
 	}
 }

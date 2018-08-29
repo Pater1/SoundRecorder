@@ -101,6 +101,9 @@ public class Deck implements AudioProvider, EventHandler {
                 length = l;
             }
         }
+        for(int i = 0; i < length; i++){
+            returnedSamples[i] /= data.size();
+        }
         return length;
     }
 

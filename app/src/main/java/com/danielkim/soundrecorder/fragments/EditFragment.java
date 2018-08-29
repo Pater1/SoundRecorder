@@ -11,10 +11,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
-import android.widget.ScrollView;
-import android.widget.TableLayout;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
@@ -46,6 +42,7 @@ public class EditFragment extends Fragment {
 	
 	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
 	
+	private Deck deck;
 	private OnFragmentInteractionListener mListener;
 	
 	public EditFragment() {
@@ -75,9 +72,9 @@ public class EditFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
 		
 		// Add DeckFragment
-		Deck d = genRandomDeck(this.getActivity());
-		DeckFragment deckFragment = DeckFragment.newInstance(d);
-
+		genRandomDeck(this.getActivity());
+		DeckFragment deckFragment = DeckFragment.newInstance(deck);
+		
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
@@ -86,12 +83,12 @@ public class EditFragment extends Fragment {
 		controlsJoystick.addOption(new SplitTrimOption());
 		controlsJoystick.addOption(new MergeOption());
 		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
-		controlsJoystick.addOption(new PlayOption(d, getActivity()));
+		controlsJoystick.addOption(new PlayOption(deck, getActivity()));
 		controlsJoystick.addOption(new RemoveOption());
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
-
+		
 		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(1, 0)));
 		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, -1)));
 		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(-1, 0)));
@@ -111,16 +108,16 @@ public class EditFragment extends Fragment {
 		}
 		return new AudioChunkInMemory(memory);
 	}
-
+	
 	private Channel genRandomChannel() {
 		Channel c = new Channel();
 		Random gen = new Random();
 		long sampleLength = 0;
-
+		
 		for (int i = 0; i < (gen.nextInt(6) + 3); i++) {
 			AudioChunk chunk = genRandomAudioChunk();
 			boolean shouldGenGap = gen.nextBoolean();
-
+			
 			if (shouldGenGap) {
 				int gap = gen.nextInt(100) + 50;
 				chunk.setStartIndex(sampleLength + gap);
@@ -130,23 +127,18 @@ public class EditFragment extends Fragment {
 			sampleLength = chunk.getEndIndex();
 			c.add(chunk);
 		}
-
+		
 		return c;
 	}
 	
 	private Deck genRandomDeck(Context c) {
-		Deck d = new Deck(c);
-		d.setSampleRate(44100);
-
-		Random gen = new Random();
-
-		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
-			//d.add(genRandomChannel());
+		if (deck == null) {
+			deck = new Deck(c);
+			deck.setSampleRate(44100);
+			Event.setPrimaryHandler(deck);
 		}
 		
-		Event.setPrimaryHandler(d);
-		
-		return d;
+		return deck;
 	}
 	// end gen test data
 	
