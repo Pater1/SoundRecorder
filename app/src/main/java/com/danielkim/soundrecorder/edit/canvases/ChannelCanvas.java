@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.OperationCanceledException;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
@@ -18,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
+import com.danielkim.soundrecorder.activities.MainActivity;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
@@ -45,6 +47,15 @@ public class ChannelCanvas extends View {
 	private long sampleBegin, sampleEnd;
 	
 	Context context;
+	
+	private int findBackendChannelIndex(){
+		for(int i = 0; i < deckFragment.getDeck().getChannelCount(); i++){
+			if(deckFragment.getDeck().getChannel(i) == channel){
+				return i;
+			}
+		}
+		return -1;
+	}
 	
 	public ChannelCanvas(Context context, Channel channel, int channelIndex, DeckFragment deckFragment) {
 		super(context);
@@ -104,22 +115,31 @@ public class ChannelCanvas extends View {
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
 		canvas.drawColor(Color.LTGRAY);
-		chunkCanvasList.clear();
+		//chunkCanvasList.clear();
 		
 		long lastEnd = 0;
 		for (int i = 0; i < channel.getDataSize(); i++) {
 			if (channel.get(i).getEndIndex() > lastEnd) {
 				lastEnd = channel.get(i).getEndIndex();
 				AudioChunk audioChunk = channel.get(i);
-				AudioChunkCanvas audioChunkCanvas = new AudioChunkCanvas(context, audioChunk);
-				chunkCanvasList.add(audioChunkCanvas);
+				AudioChunkCanvas audioChunkCanvas = null;
+				if(i >= chunkCanvasList.size()) {
+					audioChunkCanvas = new AudioChunkCanvas(context, audioChunk);
+					chunkCanvasList.add(audioChunkCanvas);
+				}else{
+					audioChunkCanvas = chunkCanvasList.get(i);
+					audioChunkCanvas.setChunk(audioChunk);
+				}
 				
 				long end = Math.min(sampleEnd, audioChunkCanvas.getChunk().getEndIndex());
 				long begin = Math.max(sampleBegin, audioChunkCanvas.getChunk().getStartIndex());
-				audioChunkCanvas.setSampleBegin(begin);
-				audioChunkCanvas.setSampleEnd(end);
+				audioChunkCanvas.setSampleBegin(begin - audioChunkCanvas.getChunk().getStartIndex());
+				audioChunkCanvas.setSampleEnd(end - audioChunkCanvas.getChunk().getStartIndex());
 				audioChunkCanvas.resize((int) (AudioChunkCanvas.GAP * (end - begin)), DeckFragment.CHANNEL_HEIGHT);
 			}
+		}
+		while (channel.getDataSize() < chunkCanvasList.size()){
+			chunkCanvasList.remove(chunkCanvasList.size()-1);
 		}
 		resize((int) (lastEnd * GAP), DeckFragment.CHANNEL_HEIGHT);
 		for (AudioChunkCanvas audioChunkCanvas : chunkCanvasList) {
@@ -129,7 +149,13 @@ public class ChannelCanvas extends View {
 			
 			audioChunkCanvas.draw(canvas);
 			Bitmap chunkBitmap = audioChunkCanvas.getmBitmap();
-			canvas.drawBitmap(chunkBitmap, Math.max(audioChunkCanvas.getChunk().getStartIndex(), sampleBegin)* GAP, 0, null);
+			long chunkStartIndex = audioChunkCanvas.getChunk().getStartIndex();
+			long max = Math.max(chunkStartIndex, sampleBegin);
+			long chunkEndIndex = audioChunkCanvas.getChunk().getEndIndex();
+			if(sampleEnd > chunkEndIndex && max == sampleBegin){
+				max -= (sampleEnd - chunkEndIndex);
+			}
+			canvas.drawBitmap(chunkBitmap, max * GAP, 0, null);
 		}
 		
 		if (isCursorPresent()) {
@@ -222,7 +248,9 @@ public class ChannelCanvas extends View {
 		int totalWidth = 0;
 		for (AudioChunkCanvas canvas : chunkCanvasList) {
 			canvas.resize(height);
-			totalWidth += canvas.getCanvasWidth();
+			if (canvas.getSampleBegin() >= sampleBegin && canvas.getSampleEnd() <= sampleEnd) {
+				totalWidth += canvas.getCanvasWidth();
+			}
 		}
 		
 		areCanvasesInit = true;
@@ -235,12 +263,15 @@ public class ChannelCanvas extends View {
 		}
 		LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
 		params.width = Math.max(width, params.width);
+//		Point displayPoint = new Point();
+//		((MainActivity) context).getWindowManager().getDefaultDisplay().getSize(displayPoint);
+//		params.width = displayPoint.x;
 		params.height = height;
 		setLayoutParams(params);
 	}
 	
 	public int getChannelIndex() {
-		return channelIndex;
+		return findBackendChannelIndex();
 	}
 	
 	public boolean isSingleCursor() {

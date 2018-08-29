@@ -10,7 +10,7 @@ import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public class ScrollOption extends Option {
 	
-	public static final int MAGNITUDE = 20;
+	public static final int MAGNITUDE = 55;
 
 	private DeckFragment deckFragment;
 	private Point direction;

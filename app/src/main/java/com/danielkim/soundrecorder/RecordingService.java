@@ -206,7 +206,16 @@ public class RecordingService extends Service {
                 @Override
                 public void run() {
                     try {
-                        new WAVRenderer().render(mFileName, mFilePath, prov);
+                        long begin = 0;
+                        short lastShort = 0;
+                        for(int i = 0; i < length; i++){
+                            if(Math.abs(buffer[i]) > 2 && Math.abs(lastShort) > 2){
+                                begin = i;
+                                break;
+                            }
+                            lastShort = buffer[i];
+                        }
+                        new WAVRenderer().render(mFileName, mFilePath, prov, begin, length);
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {

@@ -81,6 +81,7 @@ public class OptionsJoystickCanvas extends View {
 						liveOption = optionSelected;
 					}
 				}
+				deckFragment.invalidate();
 				break;
 			case MotionEvent.ACTION_UP:
 				//if move == up, down, left or right => do respective option
@@ -91,7 +92,6 @@ public class OptionsJoystickCanvas extends View {
 				}
 				if (optionSelected != null) {
 					optionSelected.onTouchUp(deckFragment.getCursorPoints(), deckFragment.getCursorChannelIndex());
-					deckFragment.refreshChannel(deckFragment.getCursorChannelIndex());
 				}
 				initialX = null;
 				initialY = null;

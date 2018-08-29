@@ -35,26 +35,26 @@ public class StationaryHorizontalScrollView extends HorizontalScrollView {
 	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 		super.onScrollChanged(l, t, oldl, oldt);
 
-		int horizontalScrollDistance = l - oldl;
-
-		if (horizontalScrollDistance > 0) {
-			if (scrolledLeft <= 0) {
-				scrolledDistance += horizontalScrollDistance;
-				MainActivity activity = (MainActivity) getContext();
-				final DeckFragment fragment = (DeckFragment) activity
-						.getSupportFragmentManager().findFragmentByTag(EditFragment.DECK_FRAGMENT_TAG);
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						fragment.resize(fragment.getGreatestChannelLength() + scrolledDistance);
-					}
-				});
-			} else {
-				scrolledLeft -= horizontalScrollDistance;
-			}
-		} else {
-			scrolledLeft += Math.abs(horizontalScrollDistance);
-		}
+//		int horizontalScrollDistance = l - oldl;
+//
+//		if (horizontalScrollDistance > 0) {
+//			if (scrolledLeft <= 0) {
+//				scrolledDistance += horizontalScrollDistance;
+//				MainActivity activity = (MainActivity) getContext();
+//				final DeckFragment fragment = (DeckFragment) activity
+//						.getSupportFragmentManager().findFragmentByTag(EditFragment.DECK_FRAGMENT_TAG);
+//				activity.runOnUiThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						fragment.resize(fragment.getGreatestChannelLength() + scrolledDistance);
+//					}
+//				});
+//			} else {
+//				scrolledLeft -= horizontalScrollDistance;
+//			}
+//		} else {
+//			scrolledLeft += Math.abs(horizontalScrollDistance);
+//		}
 	}
 
 	@Override

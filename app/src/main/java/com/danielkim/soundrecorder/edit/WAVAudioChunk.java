@@ -110,11 +110,13 @@ public class WAVAudioChunk extends AudioChunk {
 			if (startSampleIndex < lastSampleEnd) {
 				fileInputStream.close();
 				fileInputStream = new FileInputStream(readFrom);
+//				Log.d("skip_result",  + "");
 				fileInputStream.skip(44);
 				lastSampleEnd = 0;
 			}
 			if (startSampleIndex > lastSampleEnd) {
-				fileInputStream.skip(startSampleIndex - lastSampleEnd);
+//				Log.d("skip_result",  + "");
+				fileInputStream.skip((startSampleIndex - lastSampleEnd)*2);
 				lastSampleEnd = startSampleIndex;
 			}
 			
@@ -128,15 +130,24 @@ public class WAVAudioChunk extends AudioChunk {
 				
 				fileInputStream.close();
 				fileInputStream = new FileInputStream(readFrom);
-				fileInputStream.skip(startSampleIndex + 44);
+//				Log.d("skip_result",  + "");
+				fileInputStream.skip((startSampleIndex * 2) + 44);
 				lastSampleEnd = startSampleIndex;
-				ret = fileInputStream.read(raw) / (header.getBitsPerSample() / 8);
+				
+				try {
+					ret = fileInputStream.read(raw, 0, raw.length) / (header.getBitsPerSample() / 8);
+				} catch (IOException ex) {
+					Log.d("wav_exception", ex.toString());
+					ex.printStackTrace();
+				}
 			}
 			
 			int pntr = 0;
 			for (int i = 0; i < ret; i++) {
 				int r = 0;
-				for (int j = 0; j < (header.getBitsPerSample() / 8); j++) {
+				int headerBitsPerSample = (header.getBitsPerSample() / 8);
+//				Log.d("header_bits_per_sample", headerBitsPerSample + "");
+				for (int j = 0; j < headerBitsPerSample; j++) {
 					r |= (raw[pntr++] & 0xFF) << (j * 8);
 				}
 				returnedSamples[i] = (float) r / getMax(header.getBitsPerSample());
@@ -145,9 +156,6 @@ public class WAVAudioChunk extends AudioChunk {
 				}
 			}
 			
-			if (ret == 0) {
-				return -1;
-			}
 			return ret;
 		} catch (FileNotFoundException fnfe) {
 			fnfe.printStackTrace();

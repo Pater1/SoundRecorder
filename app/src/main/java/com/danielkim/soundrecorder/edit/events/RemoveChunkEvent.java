@@ -4,6 +4,7 @@ import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.SubChunk;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public class RemoveChunkEvent extends Event {
     public RemoveChunkEvent(AudioChunk toRemove, int effectChannel) {
@@ -47,6 +48,7 @@ public class RemoveChunkEvent extends Event {
 
                 if(channel.chunkCount() == 0 && parent != null){
                     parent.remove(channel);
+                    DeckFragment.instance.refresh();
                 }
 
                 return true;

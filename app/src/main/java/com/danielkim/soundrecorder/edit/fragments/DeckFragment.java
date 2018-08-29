@@ -42,6 +42,7 @@ public class DeckFragment extends Fragment {
 	public static final int MARGIN = 10;
 	public static final int CHANNEL_HEIGHT = 300;
 	
+	public static DeckFragment instance;
 	private Deck deck;
 	private LinearLayout channelLinearLayout;
 	private int cursorChannelIndex;
@@ -50,9 +51,14 @@ public class DeckFragment extends Fragment {
 	private boolean isDragging;
 	private float horizontalDisplacement;
 	
+	public Deck getDeck(){
+		return deck;
+	}
+	
 	public DeckFragment() {
 		// Required empty public constructor
 		Option.setUpdateFragment(this);
+		instance = this;
 	}
 	
 	/**
@@ -105,9 +111,8 @@ public class DeckFragment extends Fragment {
 				Log.d("begin_deckfrag", sampleBegin + "");
 			}
 			
-			int curIndex = 0;
-			Channel curChannel;
-			while ((curChannel = deck.getChannel(curIndex)) != null) {
+			for(int curIndex = 0; curIndex < deck.getChannelCount(); curIndex++){
+				Channel curChannel = deck.getChannel(curIndex);
 				ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel, curIndex, this);
 				
 				channelCanvas.setSampleBegin(sampleBegin);
@@ -121,7 +126,6 @@ public class DeckFragment extends Fragment {
 				params.leftMargin = MARGIN;
 				params.rightMargin = MARGIN;
 				channelCanvas.setLayoutParams(params);
-				curIndex++;
 			}
 			
 			this.invalidate();
@@ -272,30 +276,24 @@ public class DeckFragment extends Fragment {
 	}
 	
 	public void scrollHorizontally(int magnitude) {
-		HorizontalScrollView horizontalScrollView = getHorizontalScrollView();
-		horizontalScrollView.scrollBy(magnitude, 0);
 		horizontalDisplacement += magnitude;
 		if (horizontalDisplacement < 0) {
 			horizontalDisplacement = 0;
 		}
-//		Log.d("scroll");
+		HorizontalScrollView horizontalScrollView = getHorizontalScrollView();
+		horizontalScrollView.scrollTo((int) horizontalDisplacement, 0);
 		updateScroll();
-		getActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				//refresh();
-			}
-		});
+//		Log.d("scroll");
 	}
-
+	
 	public void updateScroll() {
 		Display display = getActivity().getWindowManager().getDefaultDisplay();
 		Point size = new Point();
 		display.getSize(size);
-
+		
 		int sampleBegin = (int) (horizontalDisplacement / AudioChunkCanvas.GAP);
 		int sampleEnd = sampleBegin + (size.x / AudioChunkCanvas.GAP);
-
+		
 		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
 			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
 			channelCanvas.setSampleBegin(sampleBegin);

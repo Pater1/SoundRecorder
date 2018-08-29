@@ -17,7 +17,11 @@ import it.sauronsoftware.jave.InputFormatException;
 public class MP3Renderer implements Renderer {
     @Override
     public String render(String fileName, String folderPath, AudioProvider audio) throws IOException, EncoderException {
-        String wav = new WAVRenderer().render(fileName, folderPath, audio);
+        return render(fileName, folderPath, audio, 0, audio.getLength());
+    }
+    @Override
+    public String render(String fileName, String folderPath, AudioProvider audio, long start, long end) throws IOException, EncoderException {
+        String wav = new WAVRenderer().render(fileName, folderPath, audio, start, end);
         File source = new File(wav);
 
         try {

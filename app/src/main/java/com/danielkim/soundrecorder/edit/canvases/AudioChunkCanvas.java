@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 /* In order for this view to work, it needs an AudioChunk to render, thus we have to create this
 programmatically.
@@ -21,8 +22,8 @@ programmatically.
 @SuppressLint("ViewConstructor")
 public class AudioChunkCanvas extends View {
 	
-	public static int GAP = 4;
-	public static final int SCALE = 100;
+	public static int GAP = 1;
+	public static final int SCALE = 1000;
 	
 	private float[] BUFFER = new float[512];
 	
@@ -79,7 +80,7 @@ public class AudioChunkCanvas extends View {
 	}
 	
 	@Override
-	protected void onDraw(Canvas canvas) {
+	protected synchronized void onDraw(Canvas canvas) {
 		super.onDraw(mCanvas);
 		
 		mCanvas.drawColor(Color.WHITE);
@@ -92,15 +93,16 @@ public class AudioChunkCanvas extends View {
 		return super.onTouchEvent(event);
 	}
 	
-	public void genChunkPath() {
-		// TODO make logic run on background thread
+//	private static final int RERENDER_DELAY = 5;
+//	private int rerenderDelay;
+	public synchronized void genChunkPath() {
 		final float MIDDLE = mCanvas.getHeight() / 2;
 		
 //		Thread t = new Thread(new Runnable() {
 //			@Override
 //			public void run() {
 				mPath.reset();
-				Log.d("audio_chunk_render", "Start gen chunk path");
+//		Log.d("audio_chunk_render", "Start gen chunk path");
 				
 				long ptr = sampleBegin;
 				float curX = 0;
@@ -114,15 +116,21 @@ public class AudioChunkCanvas extends View {
 							samplesRead = -1;
 						}
 					}
+					if(samplesRead > BUFFER.length){
+						samplesRead = BUFFER.length;
+					}
 					
 					for (int i = 0; i < samplesRead; i++) {
-						float curY = (BUFFER[i] * SCALE) + MIDDLE;
+//						Log.d("audio_chunk_render", "for " + i + " start");
+						float curY = (BUFFER[i] * DeckFragment.CHANNEL_HEIGHT/2) + MIDDLE;
 						if (mPath.isEmpty()) {
 							mPath.moveTo(curX, curY);
 						}
+//						Log.d("audio_chunk_render", "line check");
 						
 						mPath.lineTo(curX, curY);
 						curX += GAP;
+//						Log.d("audio_chunk_render", "for " + i + " end");
 					}
 					ptr += samplesRead;
 					length += samplesRead;
@@ -131,10 +139,10 @@ public class AudioChunkCanvas extends View {
 //				invalidate();
 //			}
 //		});
-		
-//		t.run();
-//		while (t.isAlive()) {}
-		Log.d("audio_chunk_render", "Done rendering audiochunk");
+//
+//		t.start();
+		//while (t.isAlive()) {}
+//		Log.d("audio_chunk_render", "Done rendering audiochunk");
 	}
 	
 	public Bitmap getmBitmap() {
@@ -143,6 +151,12 @@ public class AudioChunkCanvas extends View {
 	
 	public AudioChunk getChunk() {
 		return chunk;
+	}
+	public void setChunk(AudioChunk c){
+//		if(c != chunk){
+//			rerenderDelay = RERENDER_DELAY;
+//		}
+		this.chunk = c;
 	}
 	
 	public int getCanvasWidth() {
@@ -156,16 +170,26 @@ public class AudioChunkCanvas extends View {
 		return mCanvas.getHeight();
 	}
 	
+	public long getSampleBegin() {
+		return sampleBegin;
+	}
+	
 	public void setSampleBegin(long sampleBegin) {
+//		if(this.sampleBegin != sampleBegin){
+//			rerenderDelay = RERENDER_DELAY;
+//		}
 		this.sampleBegin = sampleBegin;
 	}
 	
+	public long getSampleEnd() {
+		return sampleEnd;
+	}
+	
 	public void setSampleEnd(long sampleEnd) {
+//		if(this.sampleEnd != sampleEnd){
+//			rerenderDelay = RERENDER_DELAY;
+//		}
 		this.sampleEnd = sampleEnd;
-		if (sampleEnd == 0) {
-			Log.d("begin_audiochunkcanvas", sampleBegin + "");
-			Log.d("end_audiochunkcanvas", sampleEnd + "");
-		}
 	}
 	
 	public Canvas getmCanvas() {

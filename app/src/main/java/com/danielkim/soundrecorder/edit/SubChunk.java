@@ -28,13 +28,19 @@ public class SubChunk extends AudioChunk {
 
     @Override
     public long getSamples(long startSampleIndex, float[] returnedSamples) {
+        if(startSampleIndex < 0){
+            return Math.min(returnedSamples.length, -startSampleIndex);
+        }
+        if(startSampleIndex >= endSample){
+            return -1;
+        }
         long localIndex = startSampleIndex + startSample;
         long ret = superChunk.getSamples(localIndex, returnedSamples);
-        if((ret+startSample)>endSample){
-            ret -= (endSample - startSample);
+        if((ret+startSampleIndex)>endSample){
+            ret = endSample - startSampleIndex;
         }
-        if (ret < -1){
-            ret = -1;
+        if(ret > returnedSamples.length){
+            ret = returnedSamples.length;
         }
         return ret;
     }
