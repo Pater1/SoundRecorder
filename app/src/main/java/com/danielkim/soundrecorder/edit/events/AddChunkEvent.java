@@ -19,7 +19,12 @@ public class AddChunkEvent extends Event {
             if(handler instanceof Deck){
                 Deck deck = (Deck)handler;
 
-                deck.getChannel(getEffectChannel()).add(toAdd);
+                int ch = getEffectChannel();
+                try {
+                    deck.getChannel(ch).add(toAdd);
+                }catch (Exception e){
+                    int i = ch;
+                }
 
                 return true;
             }

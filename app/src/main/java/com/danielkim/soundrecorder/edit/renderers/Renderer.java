@@ -9,5 +9,6 @@ import it.sauronsoftware.jave.EncoderException;
 
 public interface Renderer {
     public String render(String file, String path, AudioProvider audio) throws IOException, EncoderException;
+    public String render(String file, String path, AudioProvider audio, long start, long end) throws IOException, EncoderException;
     public String extention();
 }

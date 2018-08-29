@@ -30,6 +30,10 @@ public class WAVRenderer implements Renderer {
     }
     @Override
     public String render(String fileName, String folderPath, AudioProvider audio) throws IOException {
+        return render(fileName, folderPath, audio, 0, audio.getLength());
+    }
+    @Override
+    public String render(String fileName, String folderPath, AudioProvider audio, long start, long end) throws IOException {
         String file = FileHelper.setupFile(fileName, folderPath, extention());
 
         if(length == null){
@@ -48,7 +52,7 @@ public class WAVRenderer implements Renderer {
         h.write(stream);
 
         float[] audioBuffer = new float[512];
-        long length = 0, tmp = 0;
+        long length = start, tmp = 0;
         do{
             tmp = audio.getSamples(length, audioBuffer);
             short[] asSamples = PCMHelper.convert32bitSamplesPCMto16bitPCM(audioBuffer);
@@ -59,7 +63,7 @@ public class WAVRenderer implements Renderer {
             }
             stream.write(asBytes.array());
             length += tmp >= 0? tmp: 0;
-        }while (tmp >= 0);
+        }while (tmp >= 0 && length < end);
 
         stream.close();
 

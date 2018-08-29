@@ -20,7 +20,9 @@ public class SplitTrimOption extends Option {
         } else if (cursorArray.length == 2) {
             event = new TrimEvent(cursorArray[0], cursorArray[1], channelIndex);
         }
-        return event.handleEvent();
+        boolean b = event.handleEvent();
+        UPDATE_FRAGMENT.refresh();
+        return b;
     }
 
     @Override

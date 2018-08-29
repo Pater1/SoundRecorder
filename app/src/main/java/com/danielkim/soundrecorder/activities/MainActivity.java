@@ -1,6 +1,8 @@
 package com.danielkim.soundrecorder.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -30,6 +32,17 @@ public class MainActivity extends ActionBarActivity implements ViewPager.OnPageC
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			String[] permissions = {
+					Manifest.permission.WRITE_EXTERNAL_STORAGE,
+					Manifest.permission.RECORD_AUDIO,
+					Manifest.permission.VIBRATE
+			};
+			int requestCode = 0;
+			requestPermissions(permissions, requestCode);
+		}
+		
 		setContentView(R.layout.activity_main);
 		
 		pager = (ViewPager) findViewById(R.id.pager);

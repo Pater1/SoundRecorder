@@ -1,11 +1,14 @@
 package com.danielkim.soundrecorder.edit.fragments;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,16 +22,18 @@ import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
+import com.danielkim.soundrecorder.edit.canvases.AudioChunkCanvas;
 import com.danielkim.soundrecorder.edit.canvases.ChannelCanvas;
 import com.danielkim.soundrecorder.edit.canvases.DeckCursorCanvas;
+import com.danielkim.soundrecorder.edit.editingoptions.Option;
+import com.danielkim.soundrecorder.edit.events.Event;
+import com.danielkim.soundrecorder.edit.events.MoveEvent;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link DeckFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
  * Use the {@link DeckFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
@@ -37,16 +42,23 @@ public class DeckFragment extends Fragment {
 	public static final int MARGIN = 10;
 	public static final int CHANNEL_HEIGHT = 300;
 	
+	public static DeckFragment instance;
 	private Deck deck;
 	private LinearLayout channelLinearLayout;
 	private int cursorChannelIndex;
 	private int greatestChannelLength;
-	private OnFragmentInteractionListener mListener;
 	private AudioChunk chunkDragged;
 	private boolean isDragging;
+	private float horizontalDisplacement;
+	
+	public Deck getDeck(){
+		return deck;
+	}
 	
 	public DeckFragment() {
 		// Required empty public constructor
+		Option.setUpdateFragment(this);
+		instance = this;
 	}
 	
 	/**
@@ -82,16 +94,30 @@ public class DeckFragment extends Fragment {
 		});
 		return v;
 	}
-
-	private void updateDeckView() {
+	
+	public void updateDeckView() {
 		if (deck != null) {
 			channelLinearLayout.removeAllViews();
 			
-			int curIndex = 0;
-			Channel curChannel;
+			Display display = getActivity().getWindowManager().getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
 			
-			while ((curChannel = deck.getChannel(curIndex)) != null) {
+			int sampleBegin = (int) (horizontalDisplacement / AudioChunkCanvas.GAP);
+			int sampleEnd = sampleBegin + (size.x / AudioChunkCanvas.GAP);
+			
+			if (sampleEnd == 0) {
+				Log.d("end_deckfrag", sampleEnd + "");
+				Log.d("begin_deckfrag", sampleBegin + "");
+			}
+			
+			for(int curIndex = 0; curIndex < deck.getChannelCount(); curIndex++){
+				Channel curChannel = deck.getChannel(curIndex);
 				ChannelCanvas channelCanvas = new ChannelCanvas(getActivity(), curChannel, curIndex, this);
+				
+				channelCanvas.setSampleBegin(sampleBegin);
+				channelCanvas.setSampleEnd(sampleEnd);
+				
 				channelLinearLayout.addView(channelCanvas);
 				
 				LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) channelCanvas.getLayoutParams();
@@ -100,8 +126,22 @@ public class DeckFragment extends Fragment {
 				params.leftMargin = MARGIN;
 				params.rightMargin = MARGIN;
 				channelCanvas.setLayoutParams(params);
-				curIndex++;
 			}
+			
+			this.invalidate();
+		}
+	}
+	
+	
+	public void refresh() {
+		updateDeckView();
+		resizeMax();
+	}
+	
+	public void invalidate() {
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+			channelCanvas.invalidate();
 		}
 	}
 	
@@ -110,22 +150,22 @@ public class DeckFragment extends Fragment {
 		super.onAttach(context);
 	}
 	
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		mListener = null;
-	}
-	
 	public void updateCursor(int selectedChannelIndex) {
 		if (selectedChannelIndex != cursorChannelIndex) {
 			ChannelCanvas prevCursorChannel = ((ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex));
-			prevCursorChannel.disableCursor();
-			prevCursorChannel.invalidate();
+			if (prevCursorChannel != null) {
+				prevCursorChannel.disableCursor();
+				prevCursorChannel.invalidate();
+			}
 			cursorChannelIndex = selectedChannelIndex;
 		}
 	}
 	
 	public long[] getCursorPoints() {
+		if (channelLinearLayout.getChildCount() == 0 || cursorChannelIndex >= channelLinearLayout.getChildCount()) {
+			return null;
+		}
+		
 		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(cursorChannelIndex);
 		return channelCanvas.getCursor();
 	}
@@ -151,10 +191,11 @@ public class DeckFragment extends Fragment {
 		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
 			ChannelCanvas canvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
 			height += CHANNEL_HEIGHT + (2 * MARGIN);
-			if (canvas.getLayoutParams().width < width) {
+			int layoutWidth = canvas.getLayoutParams().width;
+			if (layoutWidth < width) {
 				canvas.resize(width, CHANNEL_HEIGHT);
-				greatestChannelLength = Math.max(canvas.getLayoutParams().width, greatestChannelLength);
 			}
+			greatestChannelLength = Math.max(canvas.getLayoutParams().width, greatestChannelLength);
 		}
 		
 		DeckCursorCanvas deckCursorCanvas = (DeckCursorCanvas) getActivity().findViewById(R.id.deckCursorCanvas);
@@ -172,13 +213,15 @@ public class DeckFragment extends Fragment {
 	
 	public void renderAudio(String fileName) {
 		try {
-			deck.render(Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder", fileName);
+			String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SoundRecorder";
+			String file = deck.render(dir, fileName);
+			Toast.makeText(getActivity(), "File saved to " + file, Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public ChannelCanvas trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
+	public void trySwitchChannel(MotionEvent e, AudioChunk chunk, ChannelCanvas curHostChannelCanvas) {
 		ChannelCanvas nextHost = null;
 		
 		if (e.getY() < 0 && curHostChannelCanvas.getChannelIndex() > 0) {
@@ -189,15 +232,17 @@ public class DeckFragment extends Fragment {
 		
 		if (nextHost != null) {
 			if (!nextHost.contains(chunk)) {
-				if (nextHost.addChunk(chunk)) {
-					curHostChannelCanvas.removeChunk(chunk);
-					curHostChannelCanvas.resize(curHostChannelCanvas.getWidth(), CHANNEL_HEIGHT);
-					nextHost.resize(nextHost.getWidth(), CHANNEL_HEIGHT);
+				Event moveEvent = new MoveEvent(chunk.getStartIndex(), chunk.getEndIndex(),
+						curHostChannelCanvas.getChannelIndex(), nextHost.getChannelIndex());
+				if (moveEvent.handleEvent()) {
+//					curHostChannelCanvas.removeChunk(chunk);
+//					curHostChannelCanvas.resize(curHostChannelCanvas.getWidth(), CHANNEL_HEIGHT);
+//					nextHost.resize(nextHost.getWidth(), CHANNEL_HEIGHT);
 					
 					long downTime = SystemClock.uptimeMillis();
 					curHostChannelCanvas.onTouchEvent(
 							MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_UP, 0, 0, 0));
-
+					
 					long nextDownTime = SystemClock.uptimeMillis() + 10;
 					nextHost.onTouchEvent(MotionEvent.obtain(nextDownTime, nextDownTime,
 							MotionEvent.ACTION_DOWN, e.getX(), e.getY(), 0));
@@ -206,16 +251,14 @@ public class DeckFragment extends Fragment {
 			
 			curHostChannelCanvas.invalidate();
 			nextHost.invalidate();
-			
-			return nextHost;
 		}
-		
-		return null;
 	}
 	
 	public void refreshChannel(int channel) {
-		ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
-		channelCanvas.regenChunks();
+		if (channelLinearLayout.getChildCount() > channel) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(channel);
+			channelCanvas.regenChunks();
+		}
 	}
 	
 	public boolean isDragging() {
@@ -231,11 +274,43 @@ public class DeckFragment extends Fragment {
 		this.chunkDragged = null;
 		setIsDragging(false);
 	}
-
+	
+	public void scrollHorizontally(int magnitude) {
+		horizontalDisplacement += magnitude;
+		if (horizontalDisplacement < 0) {
+			horizontalDisplacement = 0;
+		}
+		HorizontalScrollView horizontalScrollView = getHorizontalScrollView();
+		horizontalScrollView.scrollTo((int) horizontalDisplacement, 0);
+		updateScroll();
+//		Log.d("scroll");
+	}
+	
+	public void updateScroll() {
+		Display display = getActivity().getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		
+		int sampleBegin = (int) (horizontalDisplacement / AudioChunkCanvas.GAP);
+		int sampleEnd = sampleBegin + (size.x / AudioChunkCanvas.GAP);
+		
+		for (int i = 0; i < channelLinearLayout.getChildCount(); i++) {
+			ChannelCanvas channelCanvas = (ChannelCanvas) channelLinearLayout.getChildAt(i);
+			channelCanvas.setSampleBegin(sampleBegin);
+			channelCanvas.setSampleEnd(sampleEnd);
+			channelCanvas.invalidate();
+		}
+	}
+	
+	public void scrollVertically(int magnitude) {
+		ScrollView scrollView = getVerticalScrollView();
+		scrollView.scrollBy(0, magnitude);
+	}
+	
 	public HorizontalScrollView getHorizontalScrollView() {
 		return (HorizontalScrollView) getActivity().findViewById(R.id.channelHorizontalScrollView);
 	}
-
+	
 	public ScrollView getVerticalScrollView() {
 		return (ScrollView) getActivity().findViewById(R.id.channelScrollView);
 	}
@@ -246,20 +321,5 @@ public class DeckFragment extends Fragment {
 	
 	private void setIsDragging(boolean isDragging) {
 		this.isDragging = isDragging;
-	}
-	
-	/**
-	 * This interface must be implemented by activities that contain this
-	 * fragment to allow an interaction in this fragment to be communicated
-	 * to the activity and potentially other fragments contained in that
-	 * activity.
-	 * <p>
-	 * See the Android Training lesson <a href=
-	 * "http://developer.android.com/training/basics/fragments/communicating.html"
-	 * >Communicating with Other Fragments</a> for more information.
-	 */
-	public interface OnFragmentInteractionListener {
-		// TODO: Update argument type and name
-		void onFragmentInteraction(Uri uri);
 	}
 }

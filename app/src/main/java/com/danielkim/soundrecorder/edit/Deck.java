@@ -31,11 +31,10 @@ public class Deck implements AudioProvider, EventHandler {
     }
 
     public Channel getChannel(int index){
-        if(index < 0 || index >= data.size()){
-            return null;
-        }else{
-            return data.get(index);
-        }
+        return data.get(index);
+    }
+    public int getChannelCount(){
+        return data.size();
     }
 
     @Override
@@ -50,8 +49,8 @@ public class Deck implements AudioProvider, EventHandler {
         return lastEnd;
     }
 
-    public void render(String filePath, String fileName) throws IOException {
-        new WAVRenderer().render(fileName, android.os.Environment.getExternalStorageDirectory().getPath() + File.separator + "audio", this);
+    public String render(String filePath, String fileName) throws IOException {
+        String ret = new WAVRenderer().render(fileName, filePath, this);
 
         DBHelper db = new DBHelper(context);
         db.addRecording(fileName+".wav", filePath+File.separator+fileName+".wav",
@@ -59,6 +58,8 @@ public class Deck implements AudioProvider, EventHandler {
                         TimeHelper.sampleIndexToMicrosecond(this.getLength(), (int)this.getSampleRate())
                 )
         );
+
+        return ret;
     }
 
     @Override
@@ -92,12 +93,22 @@ public class Deck implements AudioProvider, EventHandler {
         float[] tmp = new float[returnedSamples.length];
         for(Channel c: data){
             long l = c.getSamples(startSampleIndex, tmp);
-            for(int i = 0; i < l; i++){
-                returnedSamples[i] += tmp[i];
+            if(l >= 0) {
+                for (int i = 0; i < l; i++) {
+                    try {
+                        returnedSamples[i] += tmp[i];
+                        tmp[i] = 0;
+                    }catch (ArrayIndexOutOfBoundsException e){
+                        e.printStackTrace();
+                    }
+                }
             }
             if(l > length){
                 length = l;
             }
+        }
+        for(int i = 0; i < length; i++){
+            returnedSamples[i] /= data.size();
         }
         return length;
     }

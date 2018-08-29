@@ -2,7 +2,17 @@ package com.danielkim.soundrecorder.edit.editingoptions;
 
 import android.graphics.Color;
 
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
+
 public abstract class Option {
+	protected static DeckFragment UPDATE_FRAGMENT = null;
+	public static void setUpdateFragment(DeckFragment df){
+		UPDATE_FRAGMENT = df;
+	}
+	public static DeckFragment getUpdateFragment(){
+		return UPDATE_FRAGMENT;
+	}
+
 	protected abstract boolean passedDownOnTouchUp(long[] cursorArray, int channelIndex);
 	
 	protected abstract boolean passedDownOnTouchMove(long[] cursorArray, int channelIndex);

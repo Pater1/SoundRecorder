@@ -11,10 +11,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
-import android.widget.ScrollView;
-import android.widget.TableLayout;
 import android.widget.Toast;
 
 import com.danielkim.soundrecorder.R;
@@ -24,6 +20,8 @@ import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.Deck;
 import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
 import com.danielkim.soundrecorder.edit.editingoptions.MergeOption;
+import com.danielkim.soundrecorder.edit.editingoptions.PlayOption;
+import com.danielkim.soundrecorder.edit.editingoptions.RemoveOption;
 import com.danielkim.soundrecorder.edit.editingoptions.RenderAudioOption;
 import com.danielkim.soundrecorder.edit.editingoptions.ScrollOption;
 import com.danielkim.soundrecorder.edit.editingoptions.SplitTrimOption;
@@ -44,6 +42,7 @@ public class EditFragment extends Fragment {
 	
 	public static final String DECK_FRAGMENT_TAG = "deck_fragment";
 	
+	private Deck deck;
 	private OnFragmentInteractionListener mListener;
 	
 	public EditFragment() {
@@ -73,36 +72,38 @@ public class EditFragment extends Fragment {
 		View v = inflater.inflate(R.layout.fragment_edit, container, false);
 		
 		// Add DeckFragment
-		Deck d = genRandomDeck(getActivity());
-		DeckFragment deckFragment = DeckFragment.newInstance(d);
-//		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-
+		genRandomDeck(this.getActivity());
+		DeckFragment deckFragment = DeckFragment.newInstance(deck);
+		
 		FragmentTransaction transaction = getFragmentManager().beginTransaction();
 		transaction.add(R.id.deckLayout, deckFragment, DECK_FRAGMENT_TAG);
 		transaction.commit();
-//		getChildFragmentManager().executePendingTransactions();
 		
 		OptionsJoystickCanvas controlsJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.controlsJoystick);
 		controlsJoystick.addOption(new SplitTrimOption());
 		controlsJoystick.addOption(new MergeOption());
 		controlsJoystick.addOption(new RenderAudioOption(deckFragment));
+		controlsJoystick.addOption(new PlayOption(deck, getActivity()));
+		controlsJoystick.addOption(new RemoveOption());
 		controlsJoystick.setDeckFragment(deckFragment);
 		
 		OptionsJoystickCanvas scrollJoystick = (OptionsJoystickCanvas) v.findViewById(R.id.scrollingJoystick);
-
+		
 		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(1, 0)));
-		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, 1))); // switch in case of wrong direction
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, -1)));
 		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(-1, 0)));
-		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, -1))); // switch in case of wrong direction
+		scrollJoystick.addOption(new ScrollOption(deckFragment, new Point(0, 1)));
 		scrollJoystick.setDeckFragment(deckFragment);
 		return v;
 	}
 	
 	// gen test data
+	
 	private AudioChunk genRandomAudioChunk() {
 		Random rand = new Random();
 		float[] memory = new float[rand.nextInt(100) + 50];
 		for (int i = 0; i < memory.length; i++) {
+			//memory[i] = (float)Math.sin((i/(double)44100) * 1440);
 			memory[i] = (rand.nextFloat() * 2) - 1; // -1.0 to 1.0 inclusive
 		}
 		return new AudioChunkInMemory(memory);
@@ -131,16 +132,13 @@ public class EditFragment extends Fragment {
 	}
 	
 	private Deck genRandomDeck(Context c) {
-		Deck d = new Deck(c);
-		Random gen = new Random();
-		
-		for (int i = 0; i < (gen.nextInt(10) + 5); i++) {
-			d.add(genRandomChannel());
+		if (deck == null) {
+			deck = new Deck(c);
+			deck.setSampleRate(44100);
+			Event.setPrimaryHandler(deck);
 		}
 		
-		Event.setPrimaryHandler(d);
-		
-		return d;
+		return deck;
 	}
 	// end gen test data
 	
@@ -156,9 +154,6 @@ public class EditFragment extends Fragment {
 	}
 	
 	public void resizeComponents() {
-		FrameLayout container = (FrameLayout) getActivity().findViewById(R.id.container);
-
-//		DeckFragment deckFragment = (DeckFragment) getChildFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		DeckFragment deckFragment = (DeckFragment) getFragmentManager().findFragmentByTag(DECK_FRAGMENT_TAG);
 		deckFragment.resizeMax();
 	}

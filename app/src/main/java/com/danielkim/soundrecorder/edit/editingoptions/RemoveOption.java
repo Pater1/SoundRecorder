@@ -2,26 +2,18 @@ package com.danielkim.soundrecorder.edit.editingoptions;
 
 import android.graphics.Color;
 
-import com.danielkim.soundrecorder.activities.MainActivity;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.MergeEvent;
-import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
-import com.danielkim.soundrecorder.fragments.EditFragment;
+import com.danielkim.soundrecorder.edit.events.RemoveChunkEvent;
 
-public class MergeOption extends Option {
-
+public class RemoveOption extends Option {
     @Override
     protected boolean passedDownOnTouchUp(long[] cursorArray, int channelIndex) {
         if (cursorArray == null) {
             return false;
         }
-        
-        Event event = null;
-        if (cursorArray.length == 1) {
-            event = new MergeEvent(cursorArray[0], cursorArray[0], channelIndex, true);
-        } else if (cursorArray.length == 2) {
-            event = new MergeEvent(cursorArray[0], cursorArray[1], channelIndex, false);
-        }
+
+        Event event = new RemoveChunkEvent(cursorArray[0], channelIndex);
         boolean b = event.handleEvent();
         UPDATE_FRAGMENT.refresh();
         return b;
@@ -39,6 +31,6 @@ public class MergeOption extends Option {
 
     @Override
     public int getColor() {
-        return Color.GREEN;
+        return Color.RED;
     }
 }

@@ -13,9 +13,19 @@ import java.util.List;
 public class Channel implements AudioProvider, EventHandler {
 	private List<AudioChunk> data = new ArrayList<>();
 	private ChannelHeader header = new ChannelHeader();
+
+	public int chunkCount(){
+		return data.size();
+	}
 	
 	public void add(AudioChunk chunk) {
 		data.add(chunk);
+		data.sort(new Comparator<AudioChunk>() {
+			@Override
+			public int compare(AudioChunk o1, AudioChunk o2) {
+				return (int)(o1.getStartIndex() - o2.getStartIndex());
+			}
+		});
 	}
 
     public void remove(AudioChunk chunk) {
@@ -134,6 +144,9 @@ public class Channel implements AudioProvider, EventHandler {
 			if(c.getStartIndex() > sampleIndex && (ret.get(1) == null || c.getStartIndex() < ret.get(1).getStartIndex())){
 				ret.set(1, c);
 			}
+		}
+		while (ret.contains(null)){
+			ret.remove(null);
 		}
 		return ret;
 	}

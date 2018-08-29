@@ -3,6 +3,7 @@ package com.danielkim.soundrecorder.edit.events;
 import com.danielkim.soundrecorder.edit.AudioChunk;
 import com.danielkim.soundrecorder.edit.Channel;
 import com.danielkim.soundrecorder.edit.SubChunk;
+import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public class MoveEvent extends Event{
     private int effectEndChannel;
@@ -21,8 +22,10 @@ public class MoveEvent extends Event{
                 original.setStartIndex(effectEndChannel);
 
                 if(effectEndChannel != getEffectChannel()){
-                    new RemoveChunkEvent(original, getEffectChannel()).handleEvent();
                     new AddChunkEvent(original, effectEndChannel).handleEvent();
+                    new RemoveChunkEvent(original, getEffectChannel()).handleEvent();
+    
+                    DeckFragment.instance.refresh();
                 }
 
                 return true;
