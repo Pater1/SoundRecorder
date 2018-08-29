@@ -31,6 +31,7 @@
     <string name="dialog_file_share">Share File</string>
     <string name="dialog_file_rename">Rename File</string>
     <string name="dialog_file_delete">Delete File</string>
+    <string name="dialog_file_edit">Add File to Edit Deck</string>
     <string name="dialog_action_cancel">Cancel</string>
     <string name="dialog_action_ok">OK</string>
     <string name="dialog_action_yes">Yes</string>

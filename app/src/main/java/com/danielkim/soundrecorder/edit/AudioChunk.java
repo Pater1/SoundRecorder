@@ -1,5 +1,6 @@
 package com.danielkim.soundrecorder.edit;
 
+import com.danielkim.soundrecorder.edit.events.EffectTarget;
 import com.danielkim.soundrecorder.edit.events.Event;
 import com.danielkim.soundrecorder.edit.events.EventHandler;
 import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
@@ -7,7 +8,6 @@ import com.danielkim.soundrecorder.edit.exceptions.NotImplementedException;
 public abstract class AudioChunk implements AudioProvider, EventHandler {
 	protected long startIndex;
 
-	public abstract long getLength();
 	public long getEndIndex(){
 		return getStartIndex() + getLength();
 	}
@@ -21,8 +21,6 @@ public abstract class AudioChunk implements AudioProvider, EventHandler {
 		}
 	}
 
-
-
 	protected long sampleRate;
 	@Override
 	public long getSampleRate() {
@@ -35,14 +33,12 @@ public abstract class AudioChunk implements AudioProvider, EventHandler {
 
 	@Override
 	public boolean handleEvent(Event toHandle) {
-		boolean ret = false;
-
-		if(!ret){
-			ret = passdownHandleEvent(toHandle);
-		}
-
-		throw new NotImplementedException();
+		return toHandle.applyEvent(this);
 	}
 
-	protected abstract boolean passdownHandleEvent(Event toHandle);
+	@Override
+	public int getTargetedFlag(){
+		return EffectTarget.CHUNK;
+	}
+
 }
