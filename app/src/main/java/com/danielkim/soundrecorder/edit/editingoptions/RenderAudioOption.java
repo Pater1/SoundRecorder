@@ -3,6 +3,9 @@ package com.danielkim.soundrecorder.edit.editingoptions;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -73,5 +76,10 @@ public class RenderAudioOption extends Option {
 	@Override
 	public int getColor() {
 		return Color.CYAN;
+	}
+
+	@Override
+	public Bitmap getIcon(Resources res){
+		return BitmapFactory.decodeResource(res, R.drawable.save);
 	}
 }

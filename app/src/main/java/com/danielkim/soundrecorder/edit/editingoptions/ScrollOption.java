@@ -1,11 +1,15 @@
 package com.danielkim.soundrecorder.edit.editingoptions;
 
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.util.Log;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public class ScrollOption extends Option {
@@ -44,5 +48,18 @@ public class ScrollOption extends Option {
 	@Override
 	public int getColor() {
 		return Color.MAGENTA;
+	}
+
+	@Override
+	public Bitmap getIcon(Resources res){
+		if (direction.y < 0) {
+			return BitmapFactory.decodeResource(res, R.drawable.dir_up);
+		} else if (direction.y > 0) {
+			return BitmapFactory.decodeResource(res, R.drawable.dir_down);
+		} else if (direction.x > 0) {
+			return BitmapFactory.decodeResource(res, R.drawable.dir_right);
+		} else {
+			return BitmapFactory.decodeResource(res, R.drawable.dir_left);
+		}
 	}
 }

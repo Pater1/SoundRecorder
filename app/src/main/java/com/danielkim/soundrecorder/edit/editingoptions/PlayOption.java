@@ -1,11 +1,18 @@
 package com.danielkim.soundrecorder.edit.editingoptions;
 
 import android.app.Activity;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.widget.Toast;
 
+import com.danielkim.soundrecorder.R;
 import com.danielkim.soundrecorder.edit.AudioPlayer;
 import com.danielkim.soundrecorder.edit.AudioProvider;
+import com.danielkim.soundrecorder.edit.canvases.Point;
+import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
 
 public class PlayOption extends Option {
     AudioProvider ap;
@@ -38,6 +45,15 @@ public class PlayOption extends Option {
 
     @Override
     public int getColor() {
-        return Color.YELLOW;
+        return Color.GREEN;
+    }
+
+    @Override
+    public Bitmap getIcon(Resources res){
+        return BitmapFactory.decodeResource(res, R.drawable.play);
+    }
+    @Override
+    public Point getCenterOffset() {
+        return new Point(5,0);
     }
 }

@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -108,13 +109,46 @@ public class OptionsJoystickCanvas extends View {
 		
 		if (initialX != null && initialY != null) {
 			Integer closestOptionIndex = getClosestOptionIndex();
-			
+
+			float centerX, centerY;
 			for (int i = 0; i < optionsList.size(); i++) {
 				Point point = getOptionPosition(i);
+				centerX =(float) (initialX + point.x);
+				centerY = (float) (initialY + point.y);
+
 				optionPaint.setColor(optionsList.get(i).getColor());
-				canvas.drawCircle((float) (initialX + point.x), (float) (initialY + point.y), OPTION_RADIUS, optionPaint);
+				canvas.drawCircle(centerX, centerY, OPTION_RADIUS, optionPaint);
+
+				Bitmap icon = optionsList.get(i).getIcon(getResources());
 				if (closestOptionIndex != null && closestOptionIndex == i) {
 					canvas.drawCircle(initialX, initialY, MAIN_RADIUS, optionPaint);
+
+					if(icon != null) {
+						int w = icon.getWidth(), h = icon.getHeight();
+						double l = Math.sqrt(w * w + h * h);
+						float delta = MAIN_RADIUS / ((float) l);
+						float dw = w * delta, dh = h * delta;
+
+						Point centerOffset = optionsList.get(i).getCenterOffset();
+
+						canvas.drawBitmap(icon,
+								new Rect(0, 0, w, h),
+								new Rect((int) (initialX + centerOffset.x - dw), (int) (initialY + centerOffset.y - dh), (int) (initialX + centerOffset.x + dw), (int) (initialY + centerOffset.y + dh)),
+								optionPaint);
+					}
+				}
+				if(icon != null) {
+					int w = icon.getWidth(), h = icon.getHeight();
+					double l = Math.sqrt(w*w+h*h);
+					float delta = OPTION_RADIUS/((float)l);
+					float dw = w * delta, dh = h * delta;
+
+					Point centerOffset = optionsList.get(i).getCenterOffset();
+
+					canvas.drawBitmap(icon,
+							new Rect(0,0, w, h),
+							new Rect((int)(centerX + centerOffset.x - dw), (int)(centerY + centerOffset.y - dh), (int)(centerX + centerOffset.x + dw), (int)(centerY + centerOffset.y + dh)),
+							optionPaint);
 				}
 			}
 			
@@ -174,28 +208,5 @@ public class OptionsJoystickCanvas extends View {
 		}
 		
 		return closestIndex;
-	}
-	
-	class Point {
-		
-		double x;
-		double y;
-		
-		Point(double x, double y) {
-			this.x = x;
-			this.y = y;
-		}
-		
-		double distanceSquaredTo(Point p2) {
-			return Math.pow(this.x - p2.x, 2) + Math.pow(this.y - p2.y, 2);
-		}
-		
-		double distanceTo(Point p2) {
-			return Math.sqrt(distanceSquaredTo(p2));
-		}
-		
-		Point add(Point p2) {
-			return new Point(this.x + p2.x, this.y + p2.y);
-		}
 	}
 }

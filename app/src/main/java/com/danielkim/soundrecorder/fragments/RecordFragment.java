@@ -1,6 +1,9 @@
 package com.danielkim.soundrecorder.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
@@ -9,8 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +25,8 @@ import com.danielkim.soundrecorder.RecordingService;
 import com.melnykov.fab.FloatingActionButton;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,6 +55,9 @@ public class RecordFragment extends Fragment {
     private Chronometer mChronometer = null;
     long timeWhenPaused = 0; //stores time when user clicks pause button
 
+    private Spinner mMicSelect = null;
+    private List<String> micNames = null;
+    private AudioManager audioManager = null;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -75,6 +86,45 @@ public class RecordFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View recordView = inflater.inflate(R.layout.fragment_record, container, false);
+
+        mMicSelect = (Spinner) recordView.findViewById(R.id.mic_select);
+
+        audioManager = (AudioManager) this.getActivity().getSystemService(Context.AUDIO_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            AudioDeviceInfo[] adi = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+
+            micNames = new ArrayList<String>(adi.length);
+            for(int i = 0; i < adi.length; i++){
+                micNames.add("" + adi[i].getProductName() + " : " + adi[i].getId() + "");
+            }
+
+            ArrayAdapter<String> adp1 = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, micNames);
+            adp1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            mMicSelect.setAdapter(adp1);
+
+            mMicSelect.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    AudioDeviceInfo[] adi = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+
+                    for(int i = 0; i < adi.length; i++){
+                        if(adi[i].getId() == Integer.parseInt(micNames.get(position).split(":")[1].trim())){
+                            RecordingService.s_RecordingDevice = adi[i];
+                            Toast.makeText(getActivity(),"Now recoding on " + adi[i].getProductName(),Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+
+                    Toast.makeText(getActivity(),"Error switching to requested mic! reverting to system default.",Toast.LENGTH_SHORT).show();
+                    RecordingService.s_RecordingDevice = null;
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    RecordingService.s_RecordingDevice = null;
+                }
+            });
+        }
 
         mChronometer = (Chronometer) recordView.findViewById(R.id.chronometer);
         //update recording prompt text

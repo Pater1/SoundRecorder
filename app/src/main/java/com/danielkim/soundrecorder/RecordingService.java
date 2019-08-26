@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -35,6 +36,7 @@ import java.util.TimerTask;
  * Created by Daniel on 12/28/2014.
  */
 public class RecordingService extends Service {
+    public static AudioDeviceInfo s_RecordingDevice = null;
     private static final int SAMPLE_RATE = 44100;
     private static final String LOG_TAG = "RecordingService";
 
@@ -126,11 +128,15 @@ public class RecordingService extends Service {
     public void startRecording() {
         setFileNameAndPath();
 
-        record = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                    SAMPLE_RATE,
-                    AudioFormat.CHANNEL_IN_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                    SAMPLE_RATE * 2);
+        record = new AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                SAMPLE_RATE * 2);
+        if(s_RecordingDevice != null){
+            record.setPreferredDevice(s_RecordingDevice);
+        }
         record.startRecording();
         mShouldContinue = true;
         new Thread(new Runnable() {
@@ -142,31 +148,6 @@ public class RecordingService extends Service {
                 }
             }
         }).start();
-
-        //startTimer();
-
-        /*mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mRecorder.setOutputFile(mFilePath);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mRecorder.setAudioChannels(1);
-        if (MySharedPreferences.getPrefHighQuality(this)) {
-            mRecorder.setAudioSamplingRate(44100);
-            mRecorder.setAudioEncodingBitRate(192000);
-        }
-
-        try {
-            mRecorder.prepare();
-            mRecorder.start();
-            mStartingTimeMillis = System.currentTimeMillis();
-
-            //startTimer();
-            //startForeground(1, createNotification());
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        }*/
     }
 
     public void setFileNameAndPath(){

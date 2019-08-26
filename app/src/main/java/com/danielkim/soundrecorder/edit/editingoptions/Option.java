@@ -1,7 +1,12 @@
 package com.danielkim.soundrecorder.edit.editingoptions;
 
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 
+import com.danielkim.soundrecorder.edit.canvases.OptionsJoystickCanvas;
+import com.danielkim.soundrecorder.edit.canvases.Point;
 import com.danielkim.soundrecorder.edit.fragments.DeckFragment;
 
 public abstract class Option {
@@ -20,6 +25,9 @@ public abstract class Option {
 	protected abstract boolean passedDownOnTouchDown(long[] cursorArray, int channelIndex);
 	
 	public abstract int getColor();
+
+	public Bitmap getIcon(Resources res) {return null;}
+//	public abstract Bitmap getIcon(Resources res);
 	
 	private Thread onTouchMove;
 	private boolean isUpdating;
@@ -55,5 +63,9 @@ public abstract class Option {
 		this.isUpdating = true;
 		this.onTouchMove.start();
 		return passedDownOnTouchDown(cursorArray, channelIndex);
+	}
+
+	public Point getCenterOffset() {
+		return new Point(0,0);
 	}
 }

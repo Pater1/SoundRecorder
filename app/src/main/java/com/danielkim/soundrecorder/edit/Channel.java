@@ -20,7 +20,7 @@ public class Channel implements AudioProvider, EventHandler {
 	
 	public void add(AudioChunk chunk) {
 		data.add(chunk);
-		data.sort(new Comparator<AudioChunk>() {
+		Collections.sort(data, new Comparator<AudioChunk>() {
 			@Override
 			public int compare(AudioChunk o1, AudioChunk o2) {
 				return (int)(o1.getStartIndex() - o2.getStartIndex());
